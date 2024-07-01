@@ -14,36 +14,18 @@ from ._clearlydefined import (
     print_clearlydefined_result,
     purl_to_cd_coordinates,
 )
-from ._helpers import delete_file, dict_to_json
-from ._sbom_create import generate_cdx_sbom
+from ._helpers import dict_to_json
 from ._sbom_full import enrich_sbom_with_clearlydefined
+from ._sbom_generate import generate_cdx_sbom
 from ._sbom_parse import extract_items_from_cdx_sbom
 
 parser = argparse.ArgumentParser(description=__doc__)
 subparsers = parser.add_subparsers(dest="command", help="Available commands", required=True)
 
-# Full SBOM generation and enrichment process
-parser_sbom_full = subparsers.add_parser(
-    "full-sbom",
-    help="Generate a CycloneDX SBOM and enrich its licensing data via ClearlyDefined",
-)
-parser_sbom_full.add_argument(
-    "-d",
-    "--directory",
-    help="Path to the directory of the code repository that shall be analysed",
-    required=True,
-)
-parser_sbom_full.add_argument(
-    "-o",
-    "--output",
-    help="Path where the enriched SBOM shall be saved",
-    required=True,
-)
-
 # SBOM Generator
 parser_sbom_gen = subparsers.add_parser(
-    "generate-sbom",
-    help="Generate a CycloneDX SBOM",
+    "sbom-generate",
+    help="Generate a CycloneDX SBOM using the cdxgen Docker image",
 )
 parser_sbom_gen.add_argument(
     "-d",
@@ -51,10 +33,36 @@ parser_sbom_gen.add_argument(
     help="Path to the directory of the code repository that shall be analysed",
     required=True,
 )
+parser_sbom_gen.add_argument(
+    "-o",
+    "--output",
+    help=(
+        "Path where the generated SBOM shall be saved. "
+        "If unset, it will be stored in a temporary directory."
+    ),
+)
+
+# Enrich a SBOM with ClearlyDefined data
+parser_sbom_enrich = subparsers.add_parser(
+    "sbom-enrich",
+    help="Enrich a CycloneDX SBOM and its licensing/copyright data via ClearlyDefined",
+)
+parser_sbom_enrich.add_argument(
+    "-f",
+    "--file",
+    help="Path to the SBOM that shall be enriched",
+    required=True,
+)
+parser_sbom_enrich.add_argument(
+    "-o",
+    "--output",
+    help="Path where the enriched SBOM shall be saved",
+    required=True,
+)
 
 # SBOM Parser
 parser_sbom_read = subparsers.add_parser(
-    "parse-sbom",
+    "sbom-parse",
     help="Parse a CycloneDX SBOM and extract contained information",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 )
@@ -131,19 +139,16 @@ def main():
     # Set logger
     configure_logger(args=args)
 
-    # Find out which command is called
-    if args.command == "full-sbom":
-        # Generate SBOM with cdxgen
-        sbom_raw_path = generate_cdx_sbom(args.directory)
-        # Enrich SBOM by ClearlyDefined data
-        enrich_sbom_with_clearlydefined(sbom_raw_path, args.output)
-        # Delete first SBOM
-        delete_file(sbom_raw_path)
+    # Generate SBOM with cdxgen
+    if args.command == "sbom-generate":
+        generate_cdx_sbom(args.directory, args.output)
 
-    elif args.command == "generate-sbom":
-        print(f"Generated SBOM saved to {generate_cdx_sbom(args.directory)}")
+    # Enrich SBOM by ClearlyDefined data
+    elif args.command == "sbom-enrich":
+        enrich_sbom_with_clearlydefined(args.file, args.output)
 
-    elif args.command == "parse-sbom":
+    # Parse info from SBOM
+    elif args.command == "sbom-parse":
         # Convert comma-separated information to list
         info = args.extract.split(",")
         extraction = extract_items_from_cdx_sbom(args.file, information=info, use_flict=True)
@@ -154,6 +159,7 @@ def main():
         elif args.output == "none":
             pass
 
+    # Get ClearlyDefined license/copyright data for a package
     elif args.command == "clearlydefined":
         if args.purl_to_coordinates:
             print(purl_to_cd_coordinates(args.purl_to_coordinates))
@@ -165,6 +171,7 @@ def main():
             )
         elif args.coordinates:
             print_clearlydefined_result(get_clearlydefined_license_and_copyright(args.coordinates))
+
     else:
         logging.critical("No valid command provided!")
         sys.exit(1)

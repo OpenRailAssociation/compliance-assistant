@@ -4,7 +4,7 @@
 
 [tool.poetry]
 name = "compliance-assistant"
-version = "0.1.0"
+version = "0.1.1"
 description = "Toolset that helps with creating and interacting with SBOMs, enriching with licensing and copyright information, and checking for Open Source license compliance"
 authors = ["Max Mehl <max.mehl@deutschebahn.com>"]
 readme = "README.md"

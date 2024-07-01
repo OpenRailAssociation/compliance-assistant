@@ -6,7 +6,22 @@ SPDX-License-Identifier: Apache-2.0
 
 # Compliance Assistant
 
+[![Test suites](https://github.com/OpenRailAssociation/compliance-assistant/actions/workflows/test.yaml/badge.svg)](https://github.com/OpenRailAssociation/compliance-assistant/actions/workflows/test.yaml)
+[![REUSE status](https://api.reuse.software/badge/github.com/OpenRailAssociation/compliance-assistant)](https://api.reuse.software/info/github.com/OpenRailAssociation/compliance-assistant)
+[![The latest version of Compliance Assistant can be found on PyPI.](https://img.shields.io/pypi/v/compliance-assistant.svg)](https://pypi.org/project/compliance-assistant/)
+[![Information on what versions of Python Compliance Assistant supports can be found on PyPI.](https://img.shields.io/pypi/pyversions/compliance-assistant.svg)](https://pypi.org/project/compliance-assistant/)
+
 **Compliance Assistant** is a comprehensive toolset designed to assist with creating and managing Software Bill of Materials (SBOMs). It helps in enriching SBOMs with licensing and copyright information and checks for Ppen Source license compliance using data from [ClearlyDefined](https://clearlydefined.io/).
+
+<!-- TOC -->
+- [Compliance Assistant](#compliance-assistant)
+  - [Features](#features)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Development and Contribution](#development-and-contribution)
+  - [License](#license)
+<!-- /TOC -->
 
 ## Features
 
@@ -14,6 +29,7 @@ SPDX-License-Identifier: Apache-2.0
 - **SBOM Enrichment**: Enhance an existing SBOM with detailed licensing and copyright information using ClearlyDefined data.
 - **SBOM Parsing**: Extract specific information from a CycloneDX SBOM.
 - **License and Copyright Information Retrieval**: Fetch licensing and copyright details for a single package from ClearlyDefined.
+
 
 ## Requirements
 

@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
 [![The latest version of Compliance Assistant can be found on PyPI.](https://img.shields.io/pypi/v/compliance-assistant.svg)](https://pypi.org/project/compliance-assistant/)
 [![Information on what versions of Python Compliance Assistant supports can be found on PyPI.](https://img.shields.io/pypi/pyversions/compliance-assistant.svg)](https://pypi.org/project/compliance-assistant/)
 
-**Compliance Assistant** is a comprehensive toolset designed to assist with creating and managing Software Bill of Materials (SBOMs). It helps in enriching SBOMs with licensing and copyright information and checks for Ppen Source license compliance using data from [ClearlyDefined](https://clearlydefined.io/).
+**Compliance Assistant** is a comprehensive toolset designed to assist with creating and managing Software Bill of Materials (SBOMs). It helps in enriching SBOMs with licensing and copyright information and checks for Open Source license compliance using data from [ClearlyDefined](https://clearlydefined.io/).
 
 <!-- TOC -->
 - [Compliance Assistant](#compliance-assistant)

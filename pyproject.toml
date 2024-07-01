@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "compliance-assistant"
+version = "0.1.0"
+description = ""
+authors = ["Max Mehl <max.mehl@deutschebahn.com>"]
+# readme = "README.md"
+# keywords = []
+# license = ""
+# classifiers = [
+#   "Development Status :: 5 - Production/Stable",
+#   "Environment :: Console",
+# ]
+packages = [{ include = "complassist" }]
+
+[tool.poetry.scripts]
+compliance-assistant = 'complassist.main:main'
+
+[tool.poetry.dependencies]
+python = "^3.10"
+packageurl-python = "^0.15.1"
+requests = "^2.32.3"
+flict = "^1.2.14"
+docker = "^7.1.0"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.10.0"
+pylint = "^3.2.3"
+black = "^24.4.2"
+isort = "^5.13.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# FORMATTING settings
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 100
+
+# MYPY settings
+[tool.mypy]
+files = ["complassist/*.py"]
+disable_error_code = ["import-untyped"]

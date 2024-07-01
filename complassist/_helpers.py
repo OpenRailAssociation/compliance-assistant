@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 DB Systel GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """Overarching helper functions"""
 
 import json

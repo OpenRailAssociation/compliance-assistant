@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 DB Systel GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """Create a CycloneDX SBOM using cgxgen as Docker container"""
 
 import logging

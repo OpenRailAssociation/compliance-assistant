@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 DB Systel GmbH
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Compliance Assistant
 
 **Compliance Assistant** is a comprehensive toolset designed to assist with creating and managing Software Bill of Materials (SBOMs). It helps in enriching SBOMs with licensing and copyright information and checks for Ppen Source license compliance using data from [ClearlyDefined](https://clearlydefined.io/).
@@ -96,6 +102,11 @@ For each command, you can get detailed options, e.g. `compliance-assistant sbom-
 
 We welcome contributions to improve Compliance Assistant. Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for all information.
 
+
 ## License
 
-This project is licensed under the Apache 2.0 License. See the [LICENSE.txt](LICENSE.txt) file for details.
+The content of this repository is licensed under the [Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0).
+
+There may be components under different, but compatible licenses or from different copyright holders. The project is REUSE compliant which makes these portions transparent. You will find all used licenses in the [LICENSES](./LICENSES/) directory.
+
+The project is has been started by the [OpenRail Association](https://openrailassociation.org). You are welcome to [contribute](./CONTRIBUTING.md)!

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 DB Systel GmbH
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Contributing to Compliance Assistant
 
 Thank you for your interest in this project. Contributions are welcome. Feel free to open an issue with questions or reporting ideas and bugs, or open pull requests to contribute code.

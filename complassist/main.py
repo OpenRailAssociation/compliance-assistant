@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 DB Systel GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Toolset that helps you with creating and interacting with SBOMs, enriching with
 licensing and copyright information, and checking for Open Source license

@@ -5,7 +5,9 @@
 """Generate a CycloneDX SBOM and enrich its licensing data via ClearlyDefined"""
 
 import logging
+from datetime import datetime
 
+from . import __version__
 from ._clearlydefined import (
     get_clearlydefined_license_and_copyright,
     purl_to_cd_coordinates,
@@ -170,6 +172,62 @@ def _enrich_component_with_cd_data(component: dict) -> None:
         logging.debug("[%s] %s", purl, msg)
 
 
+def _update_sbom_metadata(sbom: dict) -> dict:
+    """
+    Updates the Software Bill of Materials (SBOM) with additional metadata.
+
+    This function updates the SBOM dictionary by incrementing its version,
+    adding a current timestamp, and appending metadata about the tool used for
+    compliance assistance. If necessary, it creates missing sections in the
+    SBOM metadata.
+
+    Args:
+        sbom (dict): The SBOM dictionary to be updated.
+
+    Returns:
+        dict: The updated SBOM dictionary with the new metadata values.
+    """
+
+    # Prepare new/additional metadata values
+    version = int(sbom.get("version", 1)) + 1
+    timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    tool = {
+        "name": "compliance-assistant",
+        "group": "OpenRailAssociation",
+        "version": __version__,
+        "purl": f"pkg:pypi/compliance-assistant@{__version__}",
+        "bom-ref": f"pkg:pypi/compliance-assistant@{__version__}",
+        "type": "application",
+        "author": "OpenRail Association",
+        "publisher": "OpenRail Association",
+    }
+    author = {
+        "name": "compliance-assistant by OpenRail Association",
+    }
+
+    # Set new version
+    sbom["version"] = version
+    # Add timestamp (and metadata if missing)
+    try:
+        sbom["metadata"]["timestamp"] = timestamp
+    except KeyError:
+        sbom["metadata"] = {"timestamp": timestamp}
+    # Add tool component
+    try:
+        sbom["metadata"]["tools"]["components"].append(tool)
+    except KeyError:
+        if "tools" not in sbom["metadata"]:
+            sbom["metadata"]["tools"] = {}
+            sbom["metadata"]["tools"]["components"] = [tool]
+    # Add author
+    try:
+        sbom["metadata"]["authors"].append(author)
+    except KeyError:
+        sbom["metadata"]["authors"] = [author]
+
+    return sbom
+
+
 def enrich_sbom_with_clearlydefined(sbom_file: str, output_file: str) -> None:
     """
     Parse a SBOM and enrich license/copyright data of each component with
@@ -193,5 +251,8 @@ def enrich_sbom_with_clearlydefined(sbom_file: str, output_file: str) -> None:
     # Loop all contained components, and collect updates
     for component in sbom.get("components", []):
         _enrich_component_with_cd_data(component)
+
+    # Update SBOM metadata
+    sbom = _update_sbom_metadata(sbom)
 
     write_json_file(sbom, output_file)

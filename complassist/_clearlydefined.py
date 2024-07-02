@@ -202,7 +202,7 @@ def get_clearlydefined_license_and_copyright(coordinates: str) -> tuple[str, str
     declared_license, copyrights = _extract_license_copyright(api_return)
 
     # Declared license couldn't be extracted. Add to harvest
-    if declared_license is None:
+    if not declared_license:
         logging.info(
             "Adding %s to be harvest by ClearlyDefined. "
             "Make sure the package and this version actually exists, and try again later.",

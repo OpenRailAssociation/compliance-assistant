@@ -19,7 +19,7 @@ from ._clearlydefined import (
     purl_to_cd_coordinates,
 )
 from ._helpers import dict_to_json
-from ._sbom_full import enrich_sbom_with_clearlydefined
+from ._sbom_enrich import enrich_sbom_with_clearlydefined
 from ._sbom_generate import generate_cdx_sbom
 from ._sbom_parse import extract_items_from_cdx_sbom
 

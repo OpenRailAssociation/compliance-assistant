@@ -167,14 +167,14 @@ def main():
     elif args.command == "clearlydefined":
         if args.purl_to_coordinates:
             print(purl_to_cd_coordinates(args.purl_to_coordinates))
-        elif args.purl:
-            print_clearlydefined_result(
-                get_clearlydefined_license_and_copyright(
-                    coordinates=purl_to_cd_coordinates(args.purl)
-                )
-            )
-        elif args.coordinates:
-            print_clearlydefined_result(get_clearlydefined_license_and_copyright(args.coordinates))
+
+        elif args.coordinates or args.purl:
+            if args.purl:
+                coordinates = purl_to_cd_coordinates(args.purl)
+            else:
+                coordinates = args.coordinates
+
+            print_clearlydefined_result(get_clearlydefined_license_and_copyright(coordinates))
 
     else:
         logging.critical("No valid command provided!")

@@ -35,6 +35,7 @@ SPDX-License-Identifier: Apache-2.0
 
 - Python 3.10+
 - Internet connection for accessing ClearlyDefined services
+- [Docker](https://www.docker.com/) for generating SBOMs
 
 ## Installation
 
@@ -68,9 +69,6 @@ To upgrade compliance-assistant to the newest available version, run this comman
 pipx upgrade compliance-assistant
 ```
 
-For full functionality, the following pieces of software are recommended:
-
-* [Docker](https://www.docker.com/)
 
 ### Other installation methods
 

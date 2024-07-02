@@ -1,0 +1,51 @@
+# SPDX-FileCopyrightText: 2024 DB Systel GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Selftest
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  # Generate SBOM using cdxgen, but with NPMJS package, not Docker container
+  sbom-gen:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cdxgen
+        run: npm install -g @cyclonedx/cdxgen
+      - name: Generate CycloneDX SBOM with cdxgen
+        run: cdxgen -r . -o ${{ runner.temp }}/sbom-raw.json
+      - name: Store raw SBOM as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-raw
+          path: ${{ runner.temp }}/sbom-raw.json
+
+  # Enrich the generated SBOM
+  sbom-enrich:
+    runs-on: ubuntu-22.04
+    needs: sbom-gen
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/poetrybuild
+      # Download raw SBOM
+      - uses: actions/download-artifact@v4
+        with:
+          name: sbom-raw
+          path: ${{ runner.temp }}
+      # Run compliance-assistant sbom-enrich
+      - name: Enrich SBOM
+        run: poetry run compliance-assistant sbom-enrich -f ${{ runner.temp }}/sbom-raw.json -o ${{ runner.temp }}/sbom-enriched.json
+      # Show and upload enriched SBOM
+      - name: Print SBOM content
+        run: cat ${{ runner.temp }}/sbom-enriched.json
+      - name: Store enriched SBOM as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-enriched
+          path: ${{ runner.temp }}/sbom-enriched.json

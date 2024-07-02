@@ -113,6 +113,61 @@ For each command, you can get detailed options, e.g. `compliance-assistant sbom-
 * Extract certain data from an SBOM: `compliance-assistant sbom-parse -f /tmp/my-enriched-sbom.json -e purl,copyright,name`
 * Gather ClearlyDefined licensing/copyright information for one package: `compliance-assistant clearlydefined -p pkg:pypi/inwx-dns-recordmaster@0.3.1`
 
+### Run as GitHub workflow
+
+You may also use GitHub workflows to generate an SBOM regularly, e.g. on each published release:
+
+```yaml
+name: Generate and enrich SBOM
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  # Generate raw SBOM using cdxgen, but with NPMJS package, not Docker container
+  sbom-gen:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cdxgen
+        run: npm install -g @cyclonedx/cdxgen
+      - name: Generate CycloneDX SBOM with cdxgen
+        run: cdxgen -r . -o ${{ runner.temp }}/sbom-raw.json
+      - name: Store raw SBOM as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-raw
+          path: ${{ runner.temp }}/sbom-raw.json
+
+  # Enrich the generated SBOM
+  sbom-enrich:
+    runs-on: ubuntu-22.04
+    needs: sbom-gen
+    steps:
+      # Install compliance-assistant
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install compliance-assistant
+        run: pip install compliance-assistant
+      # Download raw SBOM
+      - uses: actions/download-artifact@v4
+        with:
+          name: sbom-raw
+          path: ${{ runner.temp }}
+      # Run compliance-assistant sbom-enrich
+      - name: Enrich SBOM
+        run: compliance-assistant sbom-enrich -f ${{ runner.temp }}/sbom-raw.json -o ${{ runner.temp }}/sbom-enriched.json
+      # Upload enriched SBOM as artifact
+      - name: Store enriched SBOM as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-enriched
+          path: ${{ runner.temp }}/sbom-enriched.json
+```
+
 
 ## Development and Contribution
 

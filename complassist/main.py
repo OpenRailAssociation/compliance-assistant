@@ -86,7 +86,7 @@ parser_sbom_read.add_argument(
     "-o",
     "--output",
     default="json",
-    choices=['json', 'dict', 'none'],
+    choices=["json", "dict", "none"],
     help="Desired output format.",
 )
 

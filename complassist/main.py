@@ -19,6 +19,7 @@ from ._clearlydefined import (
     purl_to_cd_coordinates,
 )
 from ._helpers import dict_to_json
+from ._licensing import list_all_licenses
 from ._sbom_enrich import enrich_sbom_with_clearlydefined
 from ._sbom_generate import generate_cdx_sbom
 from ._sbom_parse import extract_items_from_cdx_sbom
@@ -119,6 +120,36 @@ parser_cd_exclusive.add_argument(
     ),
 )
 
+# License Compliance
+parser_licensing = subparsers.add_parser(
+    "licensing",
+    help="Help with checking and reaching Open Source license compliance",
+)
+licensing_subparser = parser_licensing.add_subparsers(
+    dest="licensing_command",
+    help="Available licensing commands",
+)
+
+# List licenses
+licensing_list = licensing_subparser.add_parser(
+    "list",
+    help="List all detected licenses",
+)
+licensing_list.add_argument(
+    "-f",
+    "--file",
+    help="Path to the CycloneDX SBOM (JSON format) from which licenses are read",
+    required=True,
+)
+licensing_list.add_argument(
+    "-o",
+    "--output",
+    default="json",
+    choices=["json", "dict", "plain", "none"],
+    help="Desired output format.",
+)
+
+
 # General flags
 parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
@@ -136,13 +167,16 @@ def configure_logger(args) -> logging.Logger:
     return log
 
 
-def main():
+def main():  # pylint: disable=too-many-branches
     """Main function"""
 
     args = parser.parse_args()
 
     # Set logger
     configure_logger(args=args)
+
+    # Debug arguments
+    logging.debug(args)
 
     # Generate SBOM with cdxgen
     if args.command == "sbom-generate":
@@ -176,6 +210,24 @@ def main():
                 coordinates = args.coordinates
 
             print_clearlydefined_result(get_clearlydefined_license_and_copyright(coordinates))
+
+    # License compliance commands
+    elif args.command == "licensing":
+        # List all detected licenses in an SBOM, unified and sorted
+        if args.licensing_command == "list":
+            all_licenses = list_all_licenses(args.file)
+            if args.output == "json":
+                print(dict_to_json(all_licenses))
+            elif args.output == "dict":
+                print(all_licenses)
+            elif args.output == "plain":
+                print("\n".join(all_licenses))
+            elif args.output == "none":
+                pass
+
+        # No subcommand given, show help
+        else:
+            parser_licensing.print_help()
 
     else:
         logging.critical("No valid command provided!")

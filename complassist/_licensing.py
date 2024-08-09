@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 DB Systel GmbH
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """Open Source License Compliance helpers"""
 
 from ._sbom_parse import extract_items_from_cdx_sbom

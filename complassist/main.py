@@ -148,6 +148,11 @@ licensing_list.add_argument(
     choices=["json", "dict", "plain", "none"],
     help="Desired output format.",
 )
+licensing_list.add_argument(
+    "--no-simplify",
+    help="Do not simplify SPDX license expression using flict. May increase speed",
+    action="store_true",
+)
 
 
 # General flags
@@ -215,7 +220,7 @@ def main():  # pylint: disable=too-many-branches
     elif args.command == "licensing":
         # List all detected licenses in an SBOM, unified and sorted
         if args.licensing_command == "list":
-            all_licenses = list_all_licenses(args.file)
+            all_licenses = list_all_licenses(sbom_path=args.file, use_flict=not args.no_simplify)
             if args.output == "json":
                 print(dict_to_json(all_licenses))
             elif args.output == "dict":

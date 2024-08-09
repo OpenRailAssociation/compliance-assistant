@@ -141,7 +141,7 @@ def _enrich_component_with_cd_data(component: dict) -> None:
     """
     # Get purl, original licenses, and short/simplified licenses data from component
     raw_data = extract_items_from_component(
-        component, ["purl", "licenses", "licenses-short", "copyright"], True
+        component, ["purl", "licenses", "licenses-short", "copyright"], use_flict=True
     )
     # Put raw data into separate variables, slightly adapted
     purl = raw_data["purl"]

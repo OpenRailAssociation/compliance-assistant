@@ -90,6 +90,11 @@ parser_sbom_read.add_argument(
     choices=["json", "dict", "none"],
     help="Desired output format.",
 )
+parser_sbom_read.add_argument(
+    "--no-simplify",
+    help="Do not simplify SPDX license expression using flict. May increase speed",
+    action="store_true",
+)
 
 # ClearlyDefined
 parser_cd = subparsers.add_parser(
@@ -148,6 +153,11 @@ licensing_list.add_argument(
     choices=["json", "dict", "plain", "none"],
     help="Desired output format.",
 )
+licensing_list.add_argument(
+    "--no-simplify",
+    help="Do not simplify SPDX license expression using flict. May increase speed",
+    action="store_true",
+)
 
 
 # General flags
@@ -190,7 +200,9 @@ def main():  # pylint: disable=too-many-branches
     elif args.command == "sbom-parse":
         # Convert comma-separated information to list
         info = args.extract.split(",")
-        extraction = extract_items_from_cdx_sbom(args.file, information=info, use_flict=True)
+        extraction = extract_items_from_cdx_sbom(
+            args.file, information=info, use_flict=not args.no_simplify
+        )
         if args.output == "json":
             print(dict_to_json(extraction))
         elif args.output == "dict":
@@ -215,7 +227,7 @@ def main():  # pylint: disable=too-many-branches
     elif args.command == "licensing":
         # List all detected licenses in an SBOM, unified and sorted
         if args.licensing_command == "list":
-            all_licenses = list_all_licenses(args.file)
+            all_licenses = list_all_licenses(sbom_path=args.file, use_flict=not args.no_simplify)
             if args.output == "json":
                 print(dict_to_json(all_licenses))
             elif args.output == "dict":

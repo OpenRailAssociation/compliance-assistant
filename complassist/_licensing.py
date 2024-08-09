@@ -3,13 +3,15 @@
 from ._sbom_parse import extract_items_from_cdx_sbom
 
 
-def _extract_license_expression_and_names_from_sbom(sbom_path: str) -> tuple[list[str], list[str]]:
+def _extract_license_expression_and_names_from_sbom(
+    sbom_path: str, use_flict: bool = False
+) -> tuple[list[str], list[str]]:
     """Exract all SPDX expressions and license names from an SBOM"""
     lic_expressions = []
     lic_names = []
 
     for item in extract_items_from_cdx_sbom(
-        sbom_path, information=["name", "purl", "licenses-short"], use_flict=False
+        sbom_path, information=["name", "purl", "licenses-short"], use_flict=use_flict
     ):
         licenses_short: list[dict] = item.get("licenses-short", [])
 
@@ -25,9 +27,9 @@ def _extract_license_expression_and_names_from_sbom(sbom_path: str) -> tuple[lis
     return sorted(list(set(lic_expressions))), sorted(list(set(lic_names)))
 
 
-def list_all_licenses(sbom_path: str) -> list[str]:
+def list_all_licenses(sbom_path: str, use_flict: bool = False) -> list[str]:
     """List all detected licenses of an SBOM, unified and sorted"""
-    expressions, names = _extract_license_expression_and_names_from_sbom(sbom_path)
+    expressions, names = _extract_license_expression_and_names_from_sbom(sbom_path, use_flict)
 
     # Combine both lists, sort and unify again
     return sorted(list(set(expressions + names)))

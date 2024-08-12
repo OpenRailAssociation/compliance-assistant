@@ -4,6 +4,11 @@
 
 """Open Source License Compliance helpers"""
 
+import logging
+
+from license_expression import ExpressionError, Licensing, get_spdx_licensing
+
+from ._flict import flict_outbound_candidate, flict_simplify
 from ._sbom_parse import extract_items_from_cdx_sbom
 
 
@@ -35,5 +40,60 @@ def list_all_licenses(sbom_path: str, use_flict: bool = False) -> list[str]:
     """List all detected licenses of an SBOM, unified and sorted"""
     expressions, names = _extract_license_expression_and_names_from_sbom(sbom_path, use_flict)
 
-    # Combine both lists, sort and unify again
+    # Combine both SPDX expressions and names, sort and unify again
     return sorted(list(set(expressions + names)))
+
+
+def _validate_spdx_licenses(licenses: list[str]) -> list[str]:
+    """Check a list of licenses for whether they are valid SPDX. Only return
+    valid licenses, warn on bad expression"""
+    valid_licenses: list[str] = []
+    spdx: Licensing = get_spdx_licensing()
+
+    for lic in licenses:
+        try:
+            spdx.parse(lic, validate=True)
+            valid_licenses.append(lic)
+        except ExpressionError as exc:
+            logging.error(
+                "The license expression/name '%s' found in the given SBOM is no valid SPDX "
+                "expression. Therefore, it cannot be taken into consideration for the evaluation. "
+                "Error message: %s",
+                lic,
+                exc,
+            )
+
+    return valid_licenses
+
+
+def _craft_single_spdx_expression(licenses: list[str]):
+    """Convert multiple SPDX licenses and expressions into one large expression"""
+    # Put all licenses into brackets
+    licenses = [f"({lic})" for lic in licenses]
+
+    return " AND ".join(licenses)
+
+
+def get_outbound_candidate(sbom_path: str, simplify: bool = True) -> dict[str, str]:
+    """Get license outbound candidates from an SBOM"""
+    licenses_in_sbom = list_all_licenses(sbom_path, use_flict=simplify)
+
+    # Check whether all licenses are valid SPDX expressions
+    licenses = _validate_spdx_licenses(licenses_in_sbom)
+
+    # Combine single licenses into one large SPDX license expression
+    expression = _craft_single_spdx_expression(licenses)
+    if simplify:
+        logging.debug("Simplify crafted license expression %s", expression)
+        expression = flict_simplify(expression, output_format="text")
+        logging.debug("Simplified licenses expression: %s", expression)
+
+    # Get outbound candidate
+    outbound_candidate: str = flict_outbound_candidate(expression, output_format="text")
+
+    return {
+        "licenses_in_sbom": licenses_in_sbom,
+        "considered_licenses": licenses,
+        "checked_expression": expression,
+        "outbound_candidate": outbound_candidate,
+    }

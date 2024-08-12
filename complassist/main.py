@@ -19,7 +19,7 @@ from ._clearlydefined import (
     purl_to_cd_coordinates,
 )
 from ._helpers import dict_to_json
-from ._licensing import list_all_licenses
+from ._licensing import get_outbound_candidate, list_all_licenses
 from ._sbom_enrich import enrich_sbom_with_clearlydefined
 from ._sbom_generate import generate_cdx_sbom
 from ._sbom_parse import extract_items_from_cdx_sbom
@@ -159,6 +159,30 @@ licensing_list.add_argument(
     action="store_true",
 )
 
+# License outbound candidate
+licensing_outbound = licensing_subparser.add_parser(
+    "outbound",
+    help="Suggest possible outbound licenses based on found licenses in an SBOM",
+)
+licensing_outbound.add_argument(
+    "-f",
+    "--file",
+    help="Path to the CycloneDX SBOM (JSON format) from which licenses are read",
+    required=True,
+)
+licensing_outbound.add_argument(
+    "-o",
+    "--output",
+    default="json",
+    choices=["json", "dict", "plain", "none"],
+    help="Desired output format. json and dict contain the most helpful output",
+)
+licensing_outbound.add_argument(
+    "--no-simplify",
+    help="Do not simplify SPDX license expression using flict. May increase speed",
+    action="store_true",
+)
+
 
 # General flags
 parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
@@ -234,6 +258,20 @@ def main():  # pylint: disable=too-many-branches
                 print(all_licenses)
             elif args.output == "plain":
                 print("\n".join(all_licenses))
+            elif args.output == "none":
+                pass
+
+        # Suggest possible outbound licenses based on detected licenses in an SBOM
+        if args.licensing_command == "outbound":
+            outbound_candidates = get_outbound_candidate(
+                sbom_path=args.file, simplify=not args.no_simplify
+            )
+            if args.output == "json":
+                print(dict_to_json(outbound_candidates))
+            elif args.output == "dict":
+                print(outbound_candidates)
+            elif args.output == "plain":
+                print("\n".join(outbound_candidates.get("outbound_candidate")))
             elif args.output == "none":
                 pass
 

@@ -31,3 +31,10 @@ def _run_flict(
 def flict_simplify(expression: str, output_format: str) -> str:
     """Simplify a license expression using flict"""
     return _run_flict("simplify", expression, options=["-of", output_format])
+
+
+def flict_outbound_candidate(expression: str, output_format: str) -> str:
+    """Get possible outbound license candidates using flict"""
+    # TODO: `-el` would make this command more helpful but it has an error:
+    # https://github.com/vinland-technology/flict/issues/391
+    return _run_flict("outbound-candidate", expression, options=["-of", output_format])

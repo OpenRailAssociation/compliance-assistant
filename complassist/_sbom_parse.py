@@ -10,8 +10,8 @@ from ._flict import flict_simplify
 from ._helpers import read_json_file
 
 
-def _simplify_licenses_data(licenses_data: list[dict], use_flict: bool = True) -> list[dict]:
-    """Simplify a list of license ids/expressions/names to a single string,
+def _unify_licenses_data(licenses_data: list[dict], use_flict: bool = True) -> list[dict]:
+    """Convert a list of license ids/expressions/names to a single string,
     either an expression or a name"""
 
     # Case 1: no data
@@ -92,15 +92,16 @@ def _shorten_cdx_licenses_item(licenses: list, use_flict: bool = True) -> list:
                 licdata,
             )
 
-    simplified_license_data = _simplify_licenses_data(collection, use_flict=use_flict)
+    simplified_license_data = _unify_licenses_data(collection, use_flict=use_flict)
     return _license_short_to_valid_cdx_item(simplified_license_data)
 
 
 def extract_items_from_component(component: dict, items: list, use_flict: bool) -> dict:
     """Extract certain items from a single component of a CycloneDX SBOM"""
-    logging.debug(
-        "Handling component: purl = %s, name = %s", component.get("purl"), component.get("name")
-    )
+    # Very noisy logging, disabled
+    # logging.debug(
+    #     "Handling component: purl = %s, name = %s", component.get("purl"), component.get("name")
+    # )
     extraction = {}
     # Loop requested data points for extraction
     for item in items:

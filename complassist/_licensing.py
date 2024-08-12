@@ -8,7 +8,7 @@ import logging
 
 from license_expression import ExpressionError, Licensing, get_spdx_licensing
 
-from ._flict import flict_outbound_candidate, flict_simplify
+from ._flict import flict_outbound_candidate, flict_simplify, flict_simplify_list
 from ._sbom_parse import extract_items_from_cdx_sbom
 
 
@@ -33,7 +33,16 @@ def _extract_license_expression_and_names_from_sbom(
                 if lic_name := lic_dict.get("name", ""):
                     lic_names.append(lic_name)
 
-    return sorted(list(set(lic_expressions))), sorted(list(set(lic_names)))
+    # Make expressions and names unique, and sort them
+    expressions = sorted(list(set(lic_expressions)))
+    # If using flict, simplify these found licenses. Will reduce possible
+    # duplicates and fix problematic SPDX expressions (e.g. MPL-2.0+)
+    # That's far more performant than doing that for each license in the SBOM
+    if use_flict:
+        expressions = flict_simplify_list(expressions)
+    names = sorted(list(set(lic_names)))
+
+    return expressions, names
 
 
 def list_all_licenses(sbom_path: str, use_flict: bool = False) -> list[str]:

@@ -201,7 +201,7 @@ def configure_logger(args) -> logging.Logger:
     return log
 
 
-def main():  # pylint: disable=too-many-branches
+def main():  # pylint: disable=too-many-branches, too-many-statements
     """Main function"""
 
     args = parser.parse_args()
@@ -262,7 +262,7 @@ def main():  # pylint: disable=too-many-branches
                 pass
 
         # Suggest possible outbound licenses based on detected licenses in an SBOM
-        if args.licensing_command == "outbound":
+        elif args.licensing_command == "outbound":
             outbound_candidates = get_outbound_candidate(
                 sbom_path=args.file, simplify=not args.no_simplify
             )

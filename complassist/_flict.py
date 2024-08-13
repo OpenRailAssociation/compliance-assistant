@@ -28,9 +28,12 @@ def _run_flict(
     return ret.stdout.decode("UTF-8").strip()
 
 
-def flict_simplify(expression: str, output_format: str) -> str:
+def flict_simplify(expression: str, output_format: str, no_relicensing: bool = True) -> str:
     """Simplify a license expression using flict"""
-    simplified = _run_flict("simplify", expression, options=["-of", output_format])
+    options = ["-of", output_format]
+    if no_relicensing:
+        options.append("-nr")
+    simplified = _run_flict("simplify", expression, options=options)
 
     logging.debug("Simplified '%s' to '%s' using flict", expression, simplified)
 

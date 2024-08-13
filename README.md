@@ -92,19 +92,19 @@ compliance-assistant
 poetry run compliance-assistant
 ```
 
-In the following, we will just use `compliance-assistant`
+In the following, we will just use `compliance-assistant`.
 
 ### Command Structure
 
 ```bash
-compliance-assistant [global-options] <command> [command-options]
+compliance-assistant <command> [<subcommand>] [subcommand-options]
 ```
 
 ### Commands
 
 Please run `compliance-assistant --help` to get an overview of the commands and global options.
 
-For each command, you can get detailed options, e.g. `compliance-assistant sbom-enrich --help`.
+For each command, you can get detailed options, e.g. `compliance-assistant sbom enrich --help`.
 
 ### Examples
 
@@ -160,7 +160,7 @@ jobs:
           path: ${{ runner.temp }}
       # Run compliance-assistant sbom-enrich
       - name: Enrich SBOM
-        run: compliance-assistant sbom-enrich -f ${{ runner.temp }}/sbom-raw.json -o ${{ runner.temp }}/sbom-enriched.json
+        run: compliance-assistant sbom enrich -f ${{ runner.temp }}/sbom-raw.json -o ${{ runner.temp }}/sbom-enriched.json
       # Upload enriched SBOM as artifact
       - name: Store enriched SBOM as artifact
         uses: actions/upload-artifact@v4

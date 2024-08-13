@@ -24,14 +24,16 @@ from ._sbom_enrich import enrich_sbom_with_clearlydefined
 from ._sbom_generate import generate_cdx_sbom
 from ._sbom_parse import extract_items_from_cdx_sbom
 
+# Main parser with root-level flags
 parser = argparse.ArgumentParser(description=__doc__)
-
-# General flags
-parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
 
-# Subcommands
+# Initiate first-level subcommands
 subparsers = parser.add_subparsers(dest="command", help="Available commands", required=True)
+
+# Common flags, usable for all effective subcommands
+common_flags = argparse.ArgumentParser(add_help=False)  # No automatic help to avoid duplication
+common_flags.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 
 # SBOM commands
 parser_sbom = subparsers.add_parser(
@@ -47,6 +49,7 @@ subparser_sbom = parser_sbom.add_subparsers(
 parser_sbom_gen = subparser_sbom.add_parser(
     "generate",
     help="Generate a CycloneDX SBOM using the cdxgen Docker image",
+    parents=[common_flags],
 )
 parser_sbom_gen.add_argument(
     "-d",
@@ -67,6 +70,7 @@ parser_sbom_gen.add_argument(
 parser_sbom_enrich = subparser_sbom.add_parser(
     "enrich",
     help="Enrich a CycloneDX SBOM and its licensing/copyright data via ClearlyDefined",
+    parents=[common_flags],
 )
 parser_sbom_enrich.add_argument(
     "-f",
@@ -86,6 +90,7 @@ parser_sbom_read = subparser_sbom.add_parser(
     "parse",
     help="Parse a CycloneDX SBOM and extract contained information",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    parents=[common_flags],
 )
 parser_sbom_read.add_argument(
     "-f",
@@ -116,6 +121,7 @@ parser_sbom_read.add_argument(
 parser_cd = subparsers.add_parser(
     "clearlydefined",
     help="Gather license information from ClearlyDefined for a package",
+    parents=[common_flags],
 )
 parser_cd_exclusive = parser_cd.add_mutually_exclusive_group(required=True)
 parser_cd_exclusive.add_argument(
@@ -155,6 +161,7 @@ subparser_licensing = parser_licensing.add_subparsers(
 parser_licensing_list = subparser_licensing.add_parser(
     "list",
     help="List all detected licenses",
+    parents=[common_flags],
 )
 parser_licensing_list.add_argument(
     "-f",
@@ -179,6 +186,7 @@ parser_licensing_list.add_argument(
 parser_licensing_outbound = subparser_licensing.add_parser(
     "outbound",
     help="Suggest possible outbound licenses based on found licenses in an SBOM",
+    parents=[common_flags],
 )
 parser_licensing_outbound.add_argument(
     "-f",

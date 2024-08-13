@@ -25,11 +25,27 @@ from ._sbom_generate import generate_cdx_sbom
 from ._sbom_parse import extract_items_from_cdx_sbom
 
 parser = argparse.ArgumentParser(description=__doc__)
+
+# General flags
+parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
+
+# Subcommands
 subparsers = parser.add_subparsers(dest="command", help="Available commands", required=True)
 
+# SBOM commands
+parser_sbom = subparsers.add_parser(
+    "sbom",
+    help="Commands to generate, enrich, and parse SBOMs",
+)
+subparser_sbom = parser_sbom.add_subparsers(
+    dest="sbom_command",
+    help="Available sbom commands",
+)
+
 # SBOM Generator
-parser_sbom_gen = subparsers.add_parser(
-    "sbom-generate",
+parser_sbom_gen = subparser_sbom.add_parser(
+    "generate",
     help="Generate a CycloneDX SBOM using the cdxgen Docker image",
 )
 parser_sbom_gen.add_argument(
@@ -48,8 +64,8 @@ parser_sbom_gen.add_argument(
 )
 
 # Enrich a SBOM with ClearlyDefined data
-parser_sbom_enrich = subparsers.add_parser(
-    "sbom-enrich",
+parser_sbom_enrich = subparser_sbom.add_parser(
+    "enrich",
     help="Enrich a CycloneDX SBOM and its licensing/copyright data via ClearlyDefined",
 )
 parser_sbom_enrich.add_argument(
@@ -66,8 +82,8 @@ parser_sbom_enrich.add_argument(
 )
 
 # SBOM Parser
-parser_sbom_read = subparsers.add_parser(
-    "sbom-parse",
+parser_sbom_read = subparser_sbom.add_parser(
+    "parse",
     help="Parse a CycloneDX SBOM and extract contained information",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 )
@@ -130,63 +146,58 @@ parser_licensing = subparsers.add_parser(
     "licensing",
     help="Help with checking and reaching Open Source license compliance",
 )
-licensing_subparser = parser_licensing.add_subparsers(
+subparser_licensing = parser_licensing.add_subparsers(
     dest="licensing_command",
     help="Available licensing commands",
 )
 
 # List licenses
-licensing_list = licensing_subparser.add_parser(
+parser_licensing_list = subparser_licensing.add_parser(
     "list",
     help="List all detected licenses",
 )
-licensing_list.add_argument(
+parser_licensing_list.add_argument(
     "-f",
     "--file",
     help="Path to the CycloneDX SBOM (JSON format) from which licenses are read",
     required=True,
 )
-licensing_list.add_argument(
+parser_licensing_list.add_argument(
     "-o",
     "--output",
     default="json",
     choices=["json", "dict", "plain", "none"],
     help="Desired output format.",
 )
-licensing_list.add_argument(
+parser_licensing_list.add_argument(
     "--no-simplify",
     help="Do not simplify SPDX license expression using flict. May increase speed",
     action="store_true",
 )
 
 # License outbound candidate
-licensing_outbound = licensing_subparser.add_parser(
+parser_licensing_outbound = subparser_licensing.add_parser(
     "outbound",
     help="Suggest possible outbound licenses based on found licenses in an SBOM",
 )
-licensing_outbound.add_argument(
+parser_licensing_outbound.add_argument(
     "-f",
     "--file",
     help="Path to the CycloneDX SBOM (JSON format) from which licenses are read",
     required=True,
 )
-licensing_outbound.add_argument(
+parser_licensing_outbound.add_argument(
     "-o",
     "--output",
     default="json",
     choices=["json", "dict", "plain", "none"],
     help="Desired output format. json and dict contain the most helpful output",
 )
-licensing_outbound.add_argument(
+parser_licensing_outbound.add_argument(
     "--no-simplify",
     help="Do not simplify SPDX license expression using flict. May increase speed",
     action="store_true",
 )
-
-
-# General flags
-parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
-parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
 
 
 def configure_logger(args) -> logging.Logger:
@@ -213,26 +224,32 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
     logging.debug(args)
 
     # Generate SBOM with cdxgen
-    if args.command == "sbom-generate":
-        generate_cdx_sbom(args.directory, args.output)
+    # SBOM commands
+    if args.command == "sbom":
+        if args.sbom_command == "generate":
+            generate_cdx_sbom(args.directory, args.output)
 
-    # Enrich SBOM by ClearlyDefined data
-    elif args.command == "sbom-enrich":
-        enrich_sbom_with_clearlydefined(args.file, args.output)
+        # Enrich SBOM by ClearlyDefined data
+        elif args.sbom_command == "enrich":
+            enrich_sbom_with_clearlydefined(args.file, args.output)
 
-    # Parse info from SBOM
-    elif args.command == "sbom-parse":
-        # Convert comma-separated information to list
-        info = args.extract.split(",")
-        extraction = extract_items_from_cdx_sbom(
-            args.file, information=info, use_flict=not args.no_simplify
-        )
-        if args.output == "json":
-            print(dict_to_json(extraction))
-        elif args.output == "dict":
-            print(extraction)
-        elif args.output == "none":
-            pass
+        # Parse info from SBOM
+        elif args.sbom_command == "parse":
+            # Convert comma-separated information to list
+            info = args.extract.split(",")
+            extraction = extract_items_from_cdx_sbom(
+                args.file, information=info, use_flict=not args.no_simplify
+            )
+            if args.output == "json":
+                print(dict_to_json(extraction))
+            elif args.output == "dict":
+                print(extraction)
+            elif args.output == "none":
+                pass
+
+        # No sbom subcommand given, show help
+        else:
+            parser_sbom.print_help()
 
     # Get ClearlyDefined license/copyright data for a package
     elif args.command == "clearlydefined":
@@ -275,7 +292,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
             elif args.output == "none":
                 pass
 
-        # No subcommand given, show help
+        # No licensing subcommand given, show help
         else:
             parser_licensing.print_help()
 

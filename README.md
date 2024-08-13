@@ -108,9 +108,9 @@ For each command, you can get detailed options, e.g. `compliance-assistant sbom-
 
 ### Examples
 
-* Create an SBOM for the current directory: `compliance-assistant sbom-generate -d .`
-* Enrich an SBOM with ClearlyDefined data: `compliance-assistant sbom-enrich -f /tmp/my-sbom.json -o /tmp/my-enriched-sbom.json`
-* Extract certain data from an SBOM: `compliance-assistant sbom-parse -f /tmp/my-enriched-sbom.json -e purl,copyright,name`
+* Create an SBOM for the current directory: `compliance-assistant sbom generate -d .`
+* Enrich an SBOM with ClearlyDefined data: `compliance-assistant sbom enrich -f /tmp/my-sbom.json -o /tmp/my-enriched-sbom.json`
+* Extract certain data from an SBOM: `compliance-assistant sbom parse -f /tmp/my-enriched-sbom.json -e purl,copyright,name`
 * Gather ClearlyDefined licensing/copyright information for one package: `compliance-assistant clearlydefined -p pkg:pypi/inwx-dns-recordmaster@0.3.1`
 * Get license outbound candidate based on licenses from SBOM: `compliance-assistant licensing outbound -f /tmp/my-enriched-sbom.json`
 

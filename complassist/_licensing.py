@@ -85,6 +85,7 @@ def _craft_single_spdx_expression(licenses: list[str]):
 
 def get_outbound_candidate(sbom_path: str, simplify: bool = True) -> dict[str, str | list[str]]:
     """Get license outbound candidates from an SBOM"""
+    logging.info("Extracting, simplifying and validating found licenses. This can take a while")
     licenses_in_sbom = list_all_licenses(sbom_path, use_flict=simplify)
 
     # Check whether all licenses are valid SPDX expressions
@@ -98,6 +99,7 @@ def get_outbound_candidate(sbom_path: str, simplify: bool = True) -> dict[str, s
         logging.debug("Simplified licenses expression: %s", expression)
 
     # Get outbound candidate
+    logging.info("Calculating possible outbound candidates")
     outbound_candidate: str = flict_outbound_candidate(expression, output_format="text")
 
     return {

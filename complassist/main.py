@@ -120,32 +120,49 @@ parser_sbom_read.add_argument(
 # ClearlyDefined
 parser_cd = subparsers.add_parser(
     "clearlydefined",
-    help="Gather license information from ClearlyDefined for a package",
+    help="Use ClearlyDefined to fetch licensing and copyright information, and run coversions",
+)
+subparser_cd = parser_cd.add_subparsers(
+    dest="clearlydefined_command",
+    help="Available clearlydefined commands",
+)
+
+# ClearlyDefined convert subcommand
+parser_cd_convert = subparser_cd.add_parser(
+    "convert",
+    help="Convert a Package URL to ClearlyDefined coordinates",
     parents=[common_flags],
 )
-parser_cd_exclusive = parser_cd.add_mutually_exclusive_group(required=True)
-parser_cd_exclusive.add_argument(
+parser_cd_convert.add_argument(
+    "-p",
+    "--purl",
+    help="A Package URL (purl) to convert to ClearlyDefined coordinates.",
+)
+
+# ClearlyDefined fetch subcommand
+parser_cd_fetch = subparser_cd.add_parser(
+    "fetch",
+    help="Fetch licensing and copyright information of packages from ClearlyDefined",
+    parents=[common_flags],
+)
+parser_cd_fetch_exclusive = parser_cd_fetch.add_mutually_exclusive_group(required=True)
+parser_cd_fetch_exclusive.add_argument(
     "-p",
     "--purl",
     help=(
         "The purl for which ClearlyDefined licensing information is searched. "
-        "If -c is used, this is preferred."
+        "Cannot be combined with -c"
     ),
 )
-parser_cd_exclusive.add_argument(
+parser_cd_fetch_exclusive.add_argument(
     "-c",
     "--coordinates",
     help=(
-        "The ClearlyDefined coordinates for which ClearlyDefined licensing information is searched"
+        "The ClearlyDefined coordinates for which licensing information is searched. "
+        "Canot be combined with -p."
     ),
 )
-parser_cd_exclusive.add_argument(
-    "--purl-to-coordinates",
-    help=(
-        "Convert a Package URL (purl) to ClearlyDefined coordinates, and show result. "
-        "Cannot be combined with -p and -c."
-    ),
-)
+
 
 # License Compliance
 parser_licensing = subparsers.add_parser(
@@ -259,12 +276,13 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
         else:
             parser_sbom.print_help()
 
-    # Get ClearlyDefined license/copyright data for a package
+    # ClearlyDefined commands
     elif args.command == "clearlydefined":
-        if args.purl_to_coordinates:
-            print(purl_to_cd_coordinates(args.purl_to_coordinates))
+        # ClearlyDefined conversion
+        if args.clearlydefined_command == "convert":
+            print(purl_to_cd_coordinates(args.purl))
 
-        elif args.coordinates or args.purl:
+        elif args.clearlydefined_command == "fetch":
             if args.purl:
                 coordinates = purl_to_cd_coordinates(args.purl)
             else:

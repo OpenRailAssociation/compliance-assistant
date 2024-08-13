@@ -29,7 +29,9 @@ SPDX-License-Identifier: Apache-2.0
 - **SBOM Enrichment**: Enhance an existing SBOM with detailed licensing and copyright information using ClearlyDefined data.
 - **SBOM Parsing**: Extract specific information from a CycloneDX SBOM.
 - **License and Copyright Information Retrieval**: Fetch licensing and copyright details for a single package from ClearlyDefined.
+- **License compliance support**: Extract and unify licenses from SBOM, suggest possible license outbound candidates
 
+Some of these features are made possible by excellent programs such as [flict](https://github.com/vinland-technology/flict) and [cdxgen](https://github.com/CycloneDX/cdxgen).
 
 ## Requirements
 
@@ -110,6 +112,7 @@ For each command, you can get detailed options, e.g. `compliance-assistant sbom-
 * Enrich an SBOM with ClearlyDefined data: `compliance-assistant sbom-enrich -f /tmp/my-sbom.json -o /tmp/my-enriched-sbom.json`
 * Extract certain data from an SBOM: `compliance-assistant sbom-parse -f /tmp/my-enriched-sbom.json -e purl,copyright,name`
 * Gather ClearlyDefined licensing/copyright information for one package: `compliance-assistant clearlydefined -p pkg:pypi/inwx-dns-recordmaster@0.3.1`
+* Get license outbound candidate based on licenses from SBOM: `compliance-assistant licensing outbound -f /tmp/my-enriched-sbom.json`
 
 ### Run as GitHub workflow
 

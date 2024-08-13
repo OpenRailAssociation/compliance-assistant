@@ -49,9 +49,17 @@ def read_json_file(path: str) -> dict:
 
 
 def write_json_file(data: dict, path: str) -> None:
-    """Write a dict into a JSON file"""
-    with open(path, "w", encoding="UTF-8") as jsonfile:
-        return json.dump(data, jsonfile, indent=2)
+    """Write a dict into a JSON file, unless path is `-` for which it will be stdout"""
+    if path == "-":
+        print(json.dumps(data, indent=2))
+    else:
+        with open(path, "w", encoding="UTF-8") as jsonfile:
+            json.dump(data, jsonfile, indent=2)
+
+
+def print_json_file(path: str) -> None:
+    """Open a JSON file and print it to stdout"""
+    write_json_file(read_json_file(path), "-")
 
 
 def delete_file(path: str) -> None:

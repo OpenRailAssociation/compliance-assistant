@@ -62,7 +62,7 @@ parser_sbom_gen.add_argument(
     "--output",
     help=(
         "Path where the generated SBOM shall be saved. "
-        "If unset, it will be stored in a temporary directory."
+        "If unset, it will be stored in a temporary directory. Use '-' to print it to stdout."
     ),
 )
 
@@ -81,7 +81,7 @@ parser_sbom_enrich.add_argument(
 parser_sbom_enrich.add_argument(
     "-o",
     "--output",
-    help="Path where the enriched SBOM shall be saved",
+    help="Path where the enriched SBOM shall be saved. Use '-' to print it to stdout.",
     required=True,
 )
 

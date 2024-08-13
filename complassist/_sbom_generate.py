@@ -15,6 +15,8 @@ from uuid import uuid4
 import docker
 from docker.errors import APIError, ContainerError, DockerException, ImageNotFound
 
+from ._helpers import print_json_file
+
 
 def _sanitize_container_name(name: str) -> str:
     """
@@ -143,8 +145,11 @@ def generate_cdx_sbom(directory: str, output: str = "") -> str:
     with NamedTemporaryFile() as tmpfile:
         _run_cdxgen(dclient, directory, cont_name, tmpfile.name)
 
-        # Copy to final destination with user permissions
-        copy2(tmpfile.name, output)
+        # Copy to final destination with user permissions, or print file if requested
+        if output == "-":
+            print_json_file(tmpfile.name)
+        else:
+            copy2(tmpfile.name, output)
 
         logging.info("SBOM has been saved to %s", output)
 

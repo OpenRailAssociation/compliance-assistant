@@ -83,7 +83,7 @@ def _craft_single_spdx_expression(licenses: list[str]):
     return " AND ".join(licenses)
 
 
-def get_outbound_candidate(sbom_path: str, simplify: bool = True) -> dict[str, str]:
+def get_outbound_candidate(sbom_path: str, simplify: bool = True) -> dict[str, str | list[str]]:
     """Get license outbound candidates from an SBOM"""
     licenses_in_sbom = list_all_licenses(sbom_path, use_flict=simplify)
 

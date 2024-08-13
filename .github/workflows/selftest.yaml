@@ -40,7 +40,7 @@ jobs:
           path: ${{ runner.temp }}
       # Run compliance-assistant sbom-enrich
       - name: Enrich SBOM
-        run: poetry run compliance-assistant -v sbom-enrich -f ${{ runner.temp }}/sbom-raw.json -o ${{ runner.temp }}/sbom-enriched.json
+        run: poetry run compliance-assistant sbom enrich -v -f ${{ runner.temp }}/sbom-raw.json -o ${{ runner.temp }}/sbom-enriched.json
       # Show and upload enriched SBOM
       - name: Print SBOM content
         run: cat ${{ runner.temp }}/sbom-enriched.json

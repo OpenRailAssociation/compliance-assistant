@@ -24,13 +24,32 @@ from ._sbom_enrich import enrich_sbom_with_clearlydefined
 from ._sbom_generate import generate_cdx_sbom
 from ._sbom_parse import extract_items_from_cdx_sbom
 
+# Main parser with root-level flags
 parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
+
+# Initiate first-level subcommands
 subparsers = parser.add_subparsers(dest="command", help="Available commands", required=True)
 
+# Common flags, usable for all effective subcommands
+common_flags = argparse.ArgumentParser(add_help=False)  # No automatic help to avoid duplication
+common_flags.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+
+# SBOM commands
+parser_sbom = subparsers.add_parser(
+    "sbom",
+    help="Commands to generate, enrich, and parse SBOMs",
+)
+subparser_sbom = parser_sbom.add_subparsers(
+    dest="sbom_command",
+    help="Available sbom commands",
+)
+
 # SBOM Generator
-parser_sbom_gen = subparsers.add_parser(
-    "sbom-generate",
+parser_sbom_gen = subparser_sbom.add_parser(
+    "generate",
     help="Generate a CycloneDX SBOM using the cdxgen Docker image",
+    parents=[common_flags],
 )
 parser_sbom_gen.add_argument(
     "-d",
@@ -48,9 +67,10 @@ parser_sbom_gen.add_argument(
 )
 
 # Enrich a SBOM with ClearlyDefined data
-parser_sbom_enrich = subparsers.add_parser(
-    "sbom-enrich",
+parser_sbom_enrich = subparser_sbom.add_parser(
+    "enrich",
     help="Enrich a CycloneDX SBOM and its licensing/copyright data via ClearlyDefined",
+    parents=[common_flags],
 )
 parser_sbom_enrich.add_argument(
     "-f",
@@ -66,10 +86,11 @@ parser_sbom_enrich.add_argument(
 )
 
 # SBOM Parser
-parser_sbom_read = subparsers.add_parser(
-    "sbom-parse",
+parser_sbom_read = subparser_sbom.add_parser(
+    "parse",
     help="Parse a CycloneDX SBOM and extract contained information",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    parents=[common_flags],
 )
 parser_sbom_read.add_argument(
     "-f",
@@ -99,94 +120,109 @@ parser_sbom_read.add_argument(
 # ClearlyDefined
 parser_cd = subparsers.add_parser(
     "clearlydefined",
-    help="Gather license information from ClearlyDefined for a package",
+    help="Use ClearlyDefined to fetch licensing and copyright information, and run coversions",
 )
-parser_cd_exclusive = parser_cd.add_mutually_exclusive_group(required=True)
-parser_cd_exclusive.add_argument(
+subparser_cd = parser_cd.add_subparsers(
+    dest="clearlydefined_command",
+    help="Available clearlydefined commands",
+)
+
+# ClearlyDefined convert subcommand
+parser_cd_convert = subparser_cd.add_parser(
+    "convert",
+    help="Convert a Package URL to ClearlyDefined coordinates",
+    parents=[common_flags],
+)
+parser_cd_convert.add_argument(
+    "-p",
+    "--purl",
+    help="A Package URL (purl) to convert to ClearlyDefined coordinates.",
+)
+
+# ClearlyDefined fetch subcommand
+parser_cd_fetch = subparser_cd.add_parser(
+    "fetch",
+    help="Fetch licensing and copyright information of packages from ClearlyDefined",
+    parents=[common_flags],
+)
+parser_cd_fetch_exclusive = parser_cd_fetch.add_mutually_exclusive_group(required=True)
+parser_cd_fetch_exclusive.add_argument(
     "-p",
     "--purl",
     help=(
         "The purl for which ClearlyDefined licensing information is searched. "
-        "If -c is used, this is preferred."
+        "Cannot be combined with -c"
     ),
 )
-parser_cd_exclusive.add_argument(
+parser_cd_fetch_exclusive.add_argument(
     "-c",
     "--coordinates",
     help=(
-        "The ClearlyDefined coordinates for which ClearlyDefined licensing information is searched"
+        "The ClearlyDefined coordinates for which licensing information is searched. "
+        "Canot be combined with -p."
     ),
 )
-parser_cd_exclusive.add_argument(
-    "--purl-to-coordinates",
-    help=(
-        "Convert a Package URL (purl) to ClearlyDefined coordinates, and show result. "
-        "Cannot be combined with -p and -c."
-    ),
-)
+
 
 # License Compliance
 parser_licensing = subparsers.add_parser(
     "licensing",
     help="Help with checking and reaching Open Source license compliance",
 )
-licensing_subparser = parser_licensing.add_subparsers(
+subparser_licensing = parser_licensing.add_subparsers(
     dest="licensing_command",
     help="Available licensing commands",
 )
 
 # List licenses
-licensing_list = licensing_subparser.add_parser(
+parser_licensing_list = subparser_licensing.add_parser(
     "list",
     help="List all detected licenses",
+    parents=[common_flags],
 )
-licensing_list.add_argument(
+parser_licensing_list.add_argument(
     "-f",
     "--file",
     help="Path to the CycloneDX SBOM (JSON format) from which licenses are read",
     required=True,
 )
-licensing_list.add_argument(
+parser_licensing_list.add_argument(
     "-o",
     "--output",
     default="json",
     choices=["json", "dict", "plain", "none"],
     help="Desired output format.",
 )
-licensing_list.add_argument(
+parser_licensing_list.add_argument(
     "--no-simplify",
     help="Do not simplify SPDX license expression using flict. May increase speed",
     action="store_true",
 )
 
 # License outbound candidate
-licensing_outbound = licensing_subparser.add_parser(
+parser_licensing_outbound = subparser_licensing.add_parser(
     "outbound",
     help="Suggest possible outbound licenses based on found licenses in an SBOM",
+    parents=[common_flags],
 )
-licensing_outbound.add_argument(
+parser_licensing_outbound.add_argument(
     "-f",
     "--file",
     help="Path to the CycloneDX SBOM (JSON format) from which licenses are read",
     required=True,
 )
-licensing_outbound.add_argument(
+parser_licensing_outbound.add_argument(
     "-o",
     "--output",
     default="json",
     choices=["json", "dict", "plain", "none"],
     help="Desired output format. json and dict contain the most helpful output",
 )
-licensing_outbound.add_argument(
+parser_licensing_outbound.add_argument(
     "--no-simplify",
     help="Do not simplify SPDX license expression using flict. May increase speed",
     action="store_true",
 )
-
-
-# General flags
-parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
-parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
 
 
 def configure_logger(args) -> logging.Logger:
@@ -213,33 +249,40 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
     logging.debug(args)
 
     # Generate SBOM with cdxgen
-    if args.command == "sbom-generate":
-        generate_cdx_sbom(args.directory, args.output)
+    # SBOM commands
+    if args.command == "sbom":
+        if args.sbom_command == "generate":
+            generate_cdx_sbom(args.directory, args.output)
 
-    # Enrich SBOM by ClearlyDefined data
-    elif args.command == "sbom-enrich":
-        enrich_sbom_with_clearlydefined(args.file, args.output)
+        # Enrich SBOM by ClearlyDefined data
+        elif args.sbom_command == "enrich":
+            enrich_sbom_with_clearlydefined(args.file, args.output)
 
-    # Parse info from SBOM
-    elif args.command == "sbom-parse":
-        # Convert comma-separated information to list
-        info = args.extract.split(",")
-        extraction = extract_items_from_cdx_sbom(
-            args.file, information=info, use_flict=not args.no_simplify
-        )
-        if args.output == "json":
-            print(dict_to_json(extraction))
-        elif args.output == "dict":
-            print(extraction)
-        elif args.output == "none":
-            pass
+        # Parse info from SBOM
+        elif args.sbom_command == "parse":
+            # Convert comma-separated information to list
+            info = args.extract.split(",")
+            extraction = extract_items_from_cdx_sbom(
+                args.file, information=info, use_flict=not args.no_simplify
+            )
+            if args.output == "json":
+                print(dict_to_json(extraction))
+            elif args.output == "dict":
+                print(extraction)
+            elif args.output == "none":
+                pass
 
-    # Get ClearlyDefined license/copyright data for a package
+        # No sbom subcommand given, show help
+        else:
+            parser_sbom.print_help()
+
+    # ClearlyDefined commands
     elif args.command == "clearlydefined":
-        if args.purl_to_coordinates:
-            print(purl_to_cd_coordinates(args.purl_to_coordinates))
+        # ClearlyDefined conversion
+        if args.clearlydefined_command == "convert":
+            print(purl_to_cd_coordinates(args.purl))
 
-        elif args.coordinates or args.purl:
+        elif args.clearlydefined_command == "fetch":
             if args.purl:
                 coordinates = purl_to_cd_coordinates(args.purl)
             else:
@@ -275,7 +318,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
             elif args.output == "none":
                 pass
 
-        # No subcommand given, show help
+        # No licensing subcommand given, show help
         else:
             parser_licensing.print_help()
 

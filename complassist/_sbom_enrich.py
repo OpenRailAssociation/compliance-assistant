@@ -6,15 +6,16 @@
 
 import logging
 from datetime import datetime
-from typing import Any
 
 from . import __version__
 from ._clearlydefined import (
     get_clearlydefined_license_and_copyright,
+    get_clearlydefined_license_and_copyright_in_batches,
     purl_to_cd_coordinates,
 )
 from ._helpers import extract_excerpt, read_json_file, write_json_file
 from ._sbom_parse import (
+    extract_items_from_cdx_sbom,
     extract_items_from_component,
     licenses_short_to_string,
     spdx_expression_to_cdx_licenses,
@@ -233,7 +234,9 @@ def _update_sbom_metadata(sbom: dict) -> dict:
     return sbom
 
 
-def enrich_sbom_with_clearlydefined(sbom_file: str, output_file: str) -> None:
+def enrich_sbom_with_clearlydefined(
+    sbom_file: str, output_file: str, in_chunks: bool = False
+) -> None:
     """
     Parse a SBOM and enrich license/copyright data of each component with
     ClearlyDefined. Write result to new SBOM file.
@@ -249,18 +252,37 @@ def enrich_sbom_with_clearlydefined(sbom_file: str, output_file: str) -> None:
     Args:
         sbom_file (str): Path to the input SBOM file.
         output_file (str): Path to save the enriched SBOM.
+        in_chunks (bool): Ask ClearlyDefined API for multiple packages at once
     """
 
     sbom: dict[str, list[dict]] = read_json_file(sbom_file)
 
     # Loop all contained components, and collect ClearlyDefined data
     clearlydefined_data: dict[str, dict[str, str]] = {}
-    for component in sbom.get("components", []):
-        purl = extract_items_from_component(component, ["purl"], use_flict=False)["purl"]
-        cd_license, cd_copyright = get_clearlydefined_license_and_copyright(
-            coordinates=purl_to_cd_coordinates(purl)
-        )
-        clearlydefined_data[purl] = {"license": cd_license, "copyright": cd_copyright}
+    all_purls: list[str] = [
+        c["purl"] for c in extract_items_from_cdx_sbom(sbom_file, information=["purl"])
+    ]
+    if in_chunks:
+
+        # Split all purls in chunks of `max_components` size
+        max_components = 10
+        purls_chunks: list[list[str]] = [
+            all_purls[x : x + max_components] for x in range(0, len(all_purls), max_components)
+        ]
+        for chunk in purls_chunks:
+            logging.info("Getting ClearlyDefined data for %s", ", ".join(chunk))
+            result = get_clearlydefined_license_and_copyright_in_batches(chunk)
+            # Unpack results in chunks, and add to clearlydefined_data
+            for purl, (cd_license, cd_copyright) in result.items():
+                clearlydefined_data[purl] = {"license": cd_license, "copyright": cd_copyright}
+
+    else:
+        for purl in all_purls:
+            logging.info("Getting ClearlyDefined data for %s", purl)
+            cd_license, cd_copyright = get_clearlydefined_license_and_copyright(
+                coordinates=purl_to_cd_coordinates(purl)
+            )
+            clearlydefined_data[purl] = {"license": cd_license, "copyright": cd_copyright}
 
     # Now, update the components with the fetched ClearlyDefined data
     for component in sbom.get("components", []):

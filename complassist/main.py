@@ -84,6 +84,11 @@ parser_sbom_enrich.add_argument(
     help="Path where the enriched SBOM shall be saved. Use '-' to print it to stdout.",
     required=True,
 )
+parser_sbom_enrich.add_argument(
+    "--in-chunks",
+    help="Request information for multiple packages at once from ClearlyDefined API",
+    action="store_true"
+)
 
 # SBOM Parser
 parser_sbom_read = subparser_sbom.add_parser(
@@ -256,7 +261,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
 
         # Enrich SBOM by ClearlyDefined data
         elif args.sbom_command == "enrich":
-            enrich_sbom_with_clearlydefined(args.file, args.output)
+            enrich_sbom_with_clearlydefined(args.file, args.output, args.in_chunks)
 
         # Parse info from SBOM
         elif args.sbom_command == "parse":

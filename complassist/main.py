@@ -86,14 +86,14 @@ parser_sbom_enrich.add_argument(
     required=True,
 )
 parser_sbom_enrich.add_argument(
-    "--in-batches",
-    help="Request information for multiple packages at once from ClearlyDefined API",
-    action="store_true"
+    "--no-batches",
+    help=(
+        "Request information for one package at a time from ClearlyDefined API, and not in batches."
+    ),
+    action="store_true",
 )
 parser_sbom_enrich.add_argument(
-    "--http-debug",
-    help="Activate extreme HTTP logging",
-    action="store_true"
+    "--http-debug", help="Activate extreme HTTP logging", action="store_true"
 )
 
 # SBOM Parser
@@ -157,9 +157,7 @@ parser_cd_fetch = subparser_cd.add_parser(
     parents=[common_flags],
 )
 parser_cd_fetch.add_argument(
-    "--http-debug",
-    help="Activate extreme HTTP logging",
-    action="store_true"
+    "--http-debug", help="Activate extreme HTTP logging", action="store_true"
 )
 parser_cd_fetch_exclusive = parser_cd_fetch.add_mutually_exclusive_group(required=True)
 parser_cd_fetch_exclusive.add_argument(
@@ -260,7 +258,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
 
         # Enrich SBOM by ClearlyDefined data
         elif args.sbom_command == "enrich":
-            enrich_sbom_with_clearlydefined(args.file, args.output, args.in_batches)
+            enrich_sbom_with_clearlydefined(args.file, args.output, not args.no_batches)
 
         # Parse info from SBOM
         elif args.sbom_command == "parse":

@@ -235,7 +235,7 @@ def _update_sbom_metadata(sbom: dict) -> dict:
 
 
 def enrich_sbom_with_clearlydefined(
-    sbom_file: str, output_file: str, in_batches: bool = False
+    sbom_file: str, output_file: str, in_batches: bool = True
 ) -> None:
     """
     Parse a SBOM and enrich license/copyright data of each component with
@@ -252,7 +252,7 @@ def enrich_sbom_with_clearlydefined(
     Args:
         sbom_file (str): Path to the input SBOM file.
         output_file (str): Path to save the enriched SBOM.
-        in_batches (bool): Ask ClearlyDefined API for multiple packages at once
+        in_batches (bool): Ask ClearlyDefined API for multiple packages at once.
     """
 
     sbom: dict[str, list[dict]] = read_json_file(sbom_file)

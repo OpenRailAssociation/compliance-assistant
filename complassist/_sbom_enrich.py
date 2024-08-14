@@ -235,7 +235,7 @@ def _update_sbom_metadata(sbom: dict) -> dict:
 
 
 def enrich_sbom_with_clearlydefined(
-    sbom_file: str, output_file: str, in_chunks: bool = False
+    sbom_file: str, output_file: str, in_batches: bool = False
 ) -> None:
     """
     Parse a SBOM and enrich license/copyright data of each component with
@@ -252,7 +252,7 @@ def enrich_sbom_with_clearlydefined(
     Args:
         sbom_file (str): Path to the input SBOM file.
         output_file (str): Path to save the enriched SBOM.
-        in_chunks (bool): Ask ClearlyDefined API for multiple packages at once
+        in_batches (bool): Ask ClearlyDefined API for multiple packages at once
     """
 
     sbom: dict[str, list[dict]] = read_json_file(sbom_file)
@@ -262,17 +262,17 @@ def enrich_sbom_with_clearlydefined(
     all_purls: list[str] = [
         c["purl"] for c in extract_items_from_cdx_sbom(sbom_file, information=["purl"])
     ]
-    if in_chunks:
+    if in_batches:
 
-        # Split all purls in chunks of `max_components` size
+        # Split all purls in batches of `max_components` size
         max_components = 10
-        purls_chunks: list[list[str]] = [
+        purls_batches: list[list[str]] = [
             all_purls[x : x + max_components] for x in range(0, len(all_purls), max_components)
         ]
-        for chunk in purls_chunks:
-            logging.info("Getting ClearlyDefined data for %s", ", ".join(chunk))
-            result = get_clearlydefined_license_and_copyright_in_batches(chunk)
-            # Unpack results in chunks, and add to clearlydefined_data
+        for batch in purls_batches:
+            logging.info("Getting ClearlyDefined data for %s", ", ".join(batch))
+            result = get_clearlydefined_license_and_copyright_in_batches(batch)
+            # Unpack result batches, and add to clearlydefined_data
             for purl, (cd_license, cd_copyright) in result.items():
                 clearlydefined_data[purl] = {"license": cd_license, "copyright": cd_copyright}
 

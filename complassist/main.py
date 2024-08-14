@@ -86,7 +86,7 @@ parser_sbom_enrich.add_argument(
     required=True,
 )
 parser_sbom_enrich.add_argument(
-    "--in-chunks",
+    "--in-batches",
     help="Request information for multiple packages at once from ClearlyDefined API",
     action="store_true"
 )
@@ -260,7 +260,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
 
         # Enrich SBOM by ClearlyDefined data
         elif args.sbom_command == "enrich":
-            enrich_sbom_with_clearlydefined(args.file, args.output, args.in_chunks)
+            enrich_sbom_with_clearlydefined(args.file, args.output, args.in_batches)
 
         # Parse info from SBOM
         elif args.sbom_command == "parse":

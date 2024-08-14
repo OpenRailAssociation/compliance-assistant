@@ -135,10 +135,12 @@ def licenses_short_to_string(licenses: list) -> str:
     return ""
 
 
-def spdx_expression_to_cdx_licenses(spdx_expression: str) -> list:
+def spdx_expression_to_cdx_licenses(spdx_expression: str | None) -> list:
     """
     Convert a SPDX expression to a valid CycloneDX licenses item
     """
+    if spdx_expression is None:
+        return [{"expression": spdx_expression}]
     return [{"expression": spdx_expression}]
 
 

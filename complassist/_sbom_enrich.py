@@ -10,10 +10,12 @@ from datetime import datetime
 from . import __version__
 from ._clearlydefined import (
     get_clearlydefined_license_and_copyright,
+    get_clearlydefined_license_and_copyright_in_batches,
     purl_to_cd_coordinates,
 )
 from ._helpers import extract_excerpt, read_json_file, write_json_file
 from ._sbom_parse import (
+    extract_items_from_cdx_sbom,
     extract_items_from_component,
     licenses_short_to_string,
     spdx_expression_to_cdx_licenses,
@@ -22,7 +24,7 @@ from ._sbom_parse import (
 
 def _compare_sbom_cd_license(
     component: dict,
-    cd_license: str,
+    cd_license: str | None,
     sbom_license: str,
     sbom_licenses_item: list[dict],
     sbom_licenses_short_item: list[dict],
@@ -86,7 +88,7 @@ def _compare_sbom_cd_license(
 
 
 def _compare_sbom_cd_copyright(
-    component: dict, cd_copyright: str, sbom_copyright: str
+    component: dict, cd_copyright: str | None, sbom_copyright: str
 ) -> tuple[str, str]:
     """
     Compares and potentially updates the SBOM component's copyright information
@@ -132,12 +134,17 @@ def _compare_sbom_cd_copyright(
     return msg, msg_level
 
 
-def _enrich_component_with_cd_data(component: dict) -> None:
+def _enrich_component_with_cd_data(
+    component: dict, clearlydefined_data: dict[str, dict[str, str]]
+) -> None:
     """
     Enriches a single component with data from ClearlyDefined.
 
     Args:
         component (dict): The component data to enrich.
+
+        clearlydefined_data (dict): Previously fetched data for detected PURLs
+        from ClearlyDefined.
     """
     # Get purl, original licenses, and short/simplified licenses data from component
     raw_data = extract_items_from_component(
@@ -150,10 +157,9 @@ def _enrich_component_with_cd_data(component: dict) -> None:
     sbom_license = licenses_short_to_string(sbom_licenses_short_item)
     sbom_copyright = raw_data["copyright"]
 
-    # Get licensing/copyright data from ClearlyDefined
-    cd_license, cd_copyright = get_clearlydefined_license_and_copyright(
-        coordinates=purl_to_cd_coordinates(purl)
-    )
+    # Get fetched licensing/copyright data from ClearlyDefined
+    cd_license = clearlydefined_data[purl].get("license")
+    cd_copyright = clearlydefined_data[purl].get("copyright")
 
     # Compare license data of SBOM with ClearlyDefined
     msg, msg_level = _compare_sbom_cd_license(
@@ -228,7 +234,9 @@ def _update_sbom_metadata(sbom: dict) -> dict:
     return sbom
 
 
-def enrich_sbom_with_clearlydefined(sbom_file: str, output_file: str) -> None:
+def enrich_sbom_with_clearlydefined(
+    sbom_file: str, output_file: str, in_batches: bool = True, batch_size: int = 15
+) -> None:
     """
     Parse a SBOM and enrich license/copyright data of each component with
     ClearlyDefined. Write result to new SBOM file.
@@ -244,13 +252,40 @@ def enrich_sbom_with_clearlydefined(sbom_file: str, output_file: str) -> None:
     Args:
         sbom_file (str): Path to the input SBOM file.
         output_file (str): Path to save the enriched SBOM.
+        in_batches (bool): Ask ClearlyDefined API for multiple packages at once.
+        batch_size (int): Number of packages for batch request at ClearlyDefined.
     """
 
-    sbom = read_json_file(sbom_file)
+    sbom: dict[str, list[dict]] = read_json_file(sbom_file)
 
-    # Loop all contained components, and collect updates
+    # Loop all contained components, and collect ClearlyDefined data
+    clearlydefined_data: dict[str, dict[str, str]] = {}
+    all_purls: list[str] = [
+        c["purl"] for c in extract_items_from_cdx_sbom(sbom_file, information=["purl"])
+    ]
+    if in_batches:
+        # Split all purls in batches of `batch_size` size
+        purls_batches: list[list[str]] = [
+            all_purls[x : x + batch_size] for x in range(0, len(all_purls), batch_size)
+        ]
+        for batch in purls_batches:
+            logging.info("Getting ClearlyDefined data for %s", ", ".join(batch))
+            result = get_clearlydefined_license_and_copyright_in_batches(batch)
+            # Unpack result batches, and add to clearlydefined_data
+            for purl, (cd_license, cd_copyright) in result.items():
+                clearlydefined_data[purl] = {"license": cd_license, "copyright": cd_copyright}
+
+    else:
+        for purl in all_purls:
+            logging.info("Getting ClearlyDefined data for %s", purl)
+            cd_license, cd_copyright = get_clearlydefined_license_and_copyright(
+                coordinates=purl_to_cd_coordinates(purl)
+            )
+            clearlydefined_data[purl] = {"license": cd_license, "copyright": cd_copyright}
+
+    # Now, update the components with the fetched ClearlyDefined data
     for component in sbom.get("components", []):
-        _enrich_component_with_cd_data(component)
+        _enrich_component_with_cd_data(component, clearlydefined_data)
 
     # Update SBOM metadata
     sbom = _update_sbom_metadata(sbom)

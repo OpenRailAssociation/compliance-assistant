@@ -20,6 +20,7 @@ from ._clearlydefined import (
 )
 from ._helpers import dict_to_json
 from ._licensing import get_outbound_candidate, list_all_licenses
+from ._logging import configure_logger
 from ._sbom_enrich import enrich_sbom_with_clearlydefined
 from ._sbom_generate import generate_cdx_sbom
 from ._sbom_parse import extract_items_from_cdx_sbom
@@ -33,7 +34,7 @@ subparsers = parser.add_subparsers(dest="command", help="Available commands", re
 
 # Common flags, usable for all effective subcommands
 common_flags = argparse.ArgumentParser(add_help=False)  # No automatic help to avoid duplication
-common_flags.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+common_flags.add_argument("-v", "--verbose", action="store_true", help="Verbose output (DEBUG)")
 
 # SBOM commands
 parser_sbom = subparsers.add_parser(
@@ -87,6 +88,11 @@ parser_sbom_enrich.add_argument(
 parser_sbom_enrich.add_argument(
     "--in-chunks",
     help="Request information for multiple packages at once from ClearlyDefined API",
+    action="store_true"
+)
+parser_sbom_enrich.add_argument(
+    "--http-debug",
+    help="Activate extreme HTTP logging",
     action="store_true"
 )
 
@@ -149,6 +155,11 @@ parser_cd_fetch = subparser_cd.add_parser(
     "fetch",
     help="Fetch licensing and copyright information of packages from ClearlyDefined",
     parents=[common_flags],
+)
+parser_cd_fetch.add_argument(
+    "--http-debug",
+    help="Activate extreme HTTP logging",
+    action="store_true"
 )
 parser_cd_fetch_exclusive = parser_cd_fetch.add_mutually_exclusive_group(required=True)
 parser_cd_fetch_exclusive.add_argument(
@@ -228,18 +239,6 @@ parser_licensing_outbound.add_argument(
     help="Do not simplify SPDX license expression using flict. May increase speed",
     action="store_true",
 )
-
-
-def configure_logger(args) -> logging.Logger:
-    """Set logging options"""
-    log = logging.getLogger()
-    logging.basicConfig(
-        encoding="utf-8",
-        format="%(levelname)s: %(message)s",
-        level=(logging.DEBUG if args.verbose else logging.INFO),
-    )
-
-    return log
 
 
 def main():  # pylint: disable=too-many-branches, too-many-statements

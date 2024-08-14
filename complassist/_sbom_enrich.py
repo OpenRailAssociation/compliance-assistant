@@ -24,7 +24,7 @@ from ._sbom_parse import (
 
 def _compare_sbom_cd_license(
     component: dict,
-    cd_license: str,
+    cd_license: str | None,
     sbom_license: str,
     sbom_licenses_item: list[dict],
     sbom_licenses_short_item: list[dict],
@@ -88,7 +88,7 @@ def _compare_sbom_cd_license(
 
 
 def _compare_sbom_cd_copyright(
-    component: dict, cd_copyright: str, sbom_copyright: str
+    component: dict, cd_copyright: str | None, sbom_copyright: str
 ) -> tuple[str, str]:
     """
     Compares and potentially updates the SBOM component's copyright information

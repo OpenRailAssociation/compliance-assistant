@@ -40,7 +40,7 @@ def _run_flict(
     return code, stdout, stderr
 
 
-def flict_simplify(expression: str, output_format: str, no_relicensing: bool = True) -> str:
+def flict_simplify_license(expression: str, output_format: str, no_relicensing: bool = True) -> str:
     """Simplify a license expression using flict"""
     options = ["-of", output_format]
     if no_relicensing:
@@ -52,11 +52,11 @@ def flict_simplify(expression: str, output_format: str, no_relicensing: bool = T
     return simplified
 
 
-def flict_simplify_list(expressions: list[str]) -> list[str]:
+def flict_simplify_license_list(expressions: list[str]) -> list[str]:
     """Simplify a list of license expressions"""
     simplified = []
     for lic in expressions:
-        simplified.append(flict_simplify(lic, output_format="text"))
+        simplified.append(flict_simplify_license(expression=lic, output_format="text"))
 
     return list(set(simplified))
 

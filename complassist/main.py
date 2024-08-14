@@ -261,7 +261,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
     # SBOM commands
     if args.command == "sbom":
         if args.sbom_command == "generate":
-            generate_cdx_sbom(args.directory, args.output)
+            generate_cdx_sbom(directory=args.directory, output=args.output)
 
         # Enrich SBOM by ClearlyDefined data
         elif args.sbom_command == "enrich":
@@ -277,10 +277,10 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
             # Convert comma-separated information to list
             info = args.extract.split(",")
             extraction = extract_items_from_cdx_sbom(
-                args.file, information=info, use_flict=not args.no_simplify
+                sbom_path=args.file, information=info, flict_simplify=not args.no_simplify
             )
             if args.output == "json":
-                print(dict_to_json(extraction))
+                print(dict_to_json(data=extraction))
             elif args.output == "dict":
                 print(extraction)
             elif args.output == "none":
@@ -294,23 +294,27 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
     elif args.command == "clearlydefined":
         # ClearlyDefined conversion
         if args.clearlydefined_command == "convert":
-            print(purl_to_cd_coordinates(args.purl))
+            print(purl_to_cd_coordinates(purl=args.purl))
 
         elif args.clearlydefined_command == "fetch":
             if args.purl:
-                coordinates = purl_to_cd_coordinates(args.purl)
+                coordinates = purl_to_cd_coordinates(purl=args.purl)
             else:
                 coordinates = args.coordinates
 
-            print_clearlydefined_result(get_clearlydefined_license_and_copyright(coordinates))
+            print_clearlydefined_result(
+                results=get_clearlydefined_license_and_copyright(coordinates)
+            )
 
     # License compliance commands
     elif args.command == "licensing":
         # List all detected licenses in an SBOM, unified and sorted
         if args.licensing_command == "list":
-            all_licenses = list_all_licenses(sbom_path=args.file, use_flict=not args.no_simplify)
+            all_licenses = list_all_licenses(
+                sbom_path=args.file, flict_simplify=not args.no_simplify
+            )
             if args.output == "json":
-                print(dict_to_json(all_licenses))
+                print(dict_to_json(data=all_licenses))
             elif args.output == "dict":
                 print(all_licenses)
             elif args.output == "plain":
@@ -324,7 +328,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
                 sbom_path=args.file, simplify=not args.no_simplify
             )
             if args.output == "json":
-                print(dict_to_json(outbound_candidates))
+                print(dict_to_json(data=outbound_candidates))
             elif args.output == "dict":
                 print(outbound_candidates)
             elif args.output == "plain":

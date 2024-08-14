@@ -158,17 +158,23 @@ def _extract_license_copyright(cd_api_response: dict) -> tuple[str, str]:
     return license_declared, "\n".join(copyrights).strip()
 
 
-def _send_cd_harvest_request(coordinates: str) -> None:
+def _handle_missing_license_and_request_harvest(coordinates: str) -> None:
     """
-    Sends a harvest request to ClearlyDefined for the given coordinates.
+    Handles the case when a declared license is not found and triggers a harvest
+    request.
 
-    Triggers a ClearlyDefined harvest operation for the provided coordinates to
-    request the collection of metadata and license information.
+    Logs the event of a missing license and sends a harvest request to
+    ClearlyDefined for the given coordinates.
 
     Args:
-        coordinates (str): The ClearlyDefined coordinates or Package URL (purl)
-        for which to request harvesting.
+        coordinates (str): The ClearlyDefined coordinates or Package URL for
+        which the license is missing.
     """
+    logging.info(
+        "Adding %s to be harvested by ClearlyDefined. "
+        "Make sure the package and this version actually exists, and try again later.",
+        coordinates,
+    )
     _cdapi_call(
         path="",
         method="POST",
@@ -179,8 +185,7 @@ def _send_cd_harvest_request(coordinates: str) -> None:
 
 def get_clearlydefined_license_and_copyright(coordinates: str) -> tuple[str, str]:
     """
-    Retrieves the declared license for the specified coordinates from
-    ClearlyDefined.
+    Retrieves the declared license for the specified coordinates from ClearlyDefined.
 
     Queries the ClearlyDefined API to get the declared license for the provided
     coordinates or Package URL (purl). If no license is found, it initiates a
@@ -203,12 +208,7 @@ def get_clearlydefined_license_and_copyright(coordinates: str) -> tuple[str, str
 
     # Declared license couldn't be extracted. Add to harvest
     if not declared_license:
-        logging.info(
-            "Adding %s to be harvest by ClearlyDefined. "
-            "Make sure the package and this version actually exists, and try again later.",
-            coordinates,
-        )
-        _send_cd_harvest_request(coordinates)
+        _handle_missing_license_and_request_harvest(coordinates)
 
     return declared_license, copyrights
 
@@ -217,8 +217,7 @@ def get_clearlydefined_license_and_copyright_in_batches(
     purls: list[str],
 ) -> dict[str, tuple[str, str]]:
     """
-    Retrieves the declared license for multiple purls from
-    ClearlyDefined.
+    Retrieves the declared license for multiple purls from ClearlyDefined.
 
     Queries the ClearlyDefined API to get the declared license for the provided
     packages via Package URLs. If no license is found, it initiates a
@@ -247,12 +246,7 @@ def get_clearlydefined_license_and_copyright_in_batches(
 
         # Declared license couldn't be extracted. Add to harvest
         if not declared_license:
-            logging.info(
-                "Adding %s to be harvest by ClearlyDefined. "
-                "Make sure the package and this version actually exists, and try again later.",
-                pkg_coordinates,
-            )
-            _send_cd_harvest_request(pkg_coordinates)
+            _handle_missing_license_and_request_harvest(pkg_coordinates)
 
         result[pkg_purl] = (declared_license, copyrights)
 

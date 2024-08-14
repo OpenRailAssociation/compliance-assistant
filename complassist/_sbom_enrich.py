@@ -235,7 +235,7 @@ def _update_sbom_metadata(sbom: dict) -> dict:
 
 
 def enrich_sbom_with_clearlydefined(
-    sbom_file: str, output_file: str, in_batches: bool = True
+    sbom_file: str, output_file: str, in_batches: bool = True, batch_size: int = 15
 ) -> None:
     """
     Parse a SBOM and enrich license/copyright data of each component with
@@ -253,6 +253,7 @@ def enrich_sbom_with_clearlydefined(
         sbom_file (str): Path to the input SBOM file.
         output_file (str): Path to save the enriched SBOM.
         in_batches (bool): Ask ClearlyDefined API for multiple packages at once.
+        batch_size (int): Number of packages for batch request at ClearlyDefined.
     """
 
     sbom: dict[str, list[dict]] = read_json_file(sbom_file)
@@ -263,11 +264,9 @@ def enrich_sbom_with_clearlydefined(
         c["purl"] for c in extract_items_from_cdx_sbom(sbom_file, information=["purl"])
     ]
     if in_batches:
-
-        # Split all purls in batches of `max_components` size
-        max_components = 10
+        # Split all purls in batches of `batch_size` size
         purls_batches: list[list[str]] = [
-            all_purls[x : x + max_components] for x in range(0, len(all_purls), max_components)
+            all_purls[x : x + batch_size] for x in range(0, len(all_purls), batch_size)
         ]
         for batch in purls_batches:
             logging.info("Getting ClearlyDefined data for %s", ", ".join(batch))

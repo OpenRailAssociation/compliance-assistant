@@ -71,6 +71,7 @@ parser_sbom_gen.add_argument(
 parser_sbom_enrich = subparser_sbom.add_parser(
     "enrich",
     help="Enrich a CycloneDX SBOM and its licensing/copyright data via ClearlyDefined",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     parents=[common_flags],
 )
 parser_sbom_enrich.add_argument(
@@ -84,6 +85,12 @@ parser_sbom_enrich.add_argument(
     "--output",
     help="Path where the enriched SBOM shall be saved. Use '-' to print it to stdout.",
     required=True,
+)
+parser_sbom_enrich.add_argument(
+    "--batch-size",
+    help="The number of packages to request information for from ClearlyDefined at once.",
+    default=25,
+    type=int,
 )
 parser_sbom_enrich.add_argument(
     "--no-batches",
@@ -258,7 +265,12 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
 
         # Enrich SBOM by ClearlyDefined data
         elif args.sbom_command == "enrich":
-            enrich_sbom_with_clearlydefined(args.file, args.output, not args.no_batches)
+            enrich_sbom_with_clearlydefined(
+                sbom_file=args.file,
+                output_file=args.output,
+                in_batches=not args.no_batches,
+                batch_size=args.batch_size,
+            )
 
         # Parse info from SBOM
         elif args.sbom_command == "parse":

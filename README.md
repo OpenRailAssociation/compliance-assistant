@@ -43,7 +43,7 @@ Some of these features are made possible by excellent programs such as [flict](h
 
 ### Install and run via pipx (Recommended)
 
-[pipx](https://pypa.github.io/pipx/) makes installing and running Python programs easier and avoid conflicts with other packages. Install it with
+[pipx](https://pypa.github.io/pipx/) makes installing and running Python programs easier and avoids conflicts with other packages. Install it with
 
 ```sh
 pip3 install pipx
@@ -104,7 +104,7 @@ compliance-assistant <command> [<subcommand>] [subcommand-options]
 
 Please run `compliance-assistant --help` to get an overview of the commands and global options.
 
-For each command, you can get detailed options, e.g. `compliance-assistant sbom enrich --help`.
+For each command, you can get detailed options, e.g., `compliance-assistant sbom enrich --help`.
 
 ### Examples
 
@@ -116,7 +116,7 @@ For each command, you can get detailed options, e.g. `compliance-assistant sbom 
 
 ### Run as GitHub workflow
 
-You may also use GitHub workflows to generate an SBOM regularly, e.g. on each published release:
+You may also use GitHub workflows to generate an SBOM regularly, e.g., on each published release:
 
 ```yaml
 name: Generate and enrich SBOM
@@ -181,4 +181,4 @@ The content of this repository is licensed under the [Apache 2.0 license](https:
 
 There may be components under different, but compatible licenses or from different copyright holders. The project is REUSE compliant which makes these portions transparent. You will find all used licenses in the [LICENSES](./LICENSES/) directory.
 
-The project is has been started by the [OpenRail Association](https://openrailassociation.org). You are welcome to [contribute](./CONTRIBUTING.md)!
+The project has been started by the [OpenRail Association](https://openrailassociation.org). You are welcome to [contribute](./CONTRIBUTING.md)!

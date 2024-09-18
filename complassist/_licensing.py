@@ -19,7 +19,7 @@ from ._sbom_parse import extract_items_from_cdx_sbom
 def _extract_license_expression_and_names_from_sbom(
     sbom_path: str, flict_simplify: bool = False
 ) -> tuple[list[str], list[str]]:
-    """Exract all SPDX expressions and license names from an SBOM"""
+    """Extract all SPDX expressions and license names from an SBOM"""
     lic_expressions = []
     lic_names = []
 
@@ -32,10 +32,13 @@ def _extract_license_expression_and_names_from_sbom(
             if lic_expression := entry.get("expression", ""):
                 lic_expressions.append(lic_expression)
             # Use license name instead
-            else:
-                lic_dict: dict = entry.get("license", {})
+            elif lic_dict := entry.get("license", {}):
                 if lic_name := lic_dict.get("name", ""):
                     lic_names.append(lic_name)
+
+        # No license found. Warn user
+        if not licenses_short:
+            logging.info("No licensing data found for %s (%s)", item.get("name"), item.get("purl"))
 
     # Make expressions and names unique, and sort them
     expressions = sorted(list(set(lic_expressions)))

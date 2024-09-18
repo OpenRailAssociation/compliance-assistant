@@ -16,7 +16,7 @@ def configure_logger(args) -> logging.Logger:
         level=logging.INFO,
     )
     # Adapt logging level
-    if args.verbose:
+    if getattr(args, "verbose", False):
         log.setLevel("DEBUG")
     # Activate extreme logging for requests to also get POST data
     if hasattr(args, "http_debug") and args.http_debug:

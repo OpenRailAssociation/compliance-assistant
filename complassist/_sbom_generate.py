@@ -208,29 +208,34 @@ def sbom_gen_syft(directory: str, output: str = "") -> str:
         if code != 0:
             logging.error("There was an error during SBOM generation: %s\n%s", stdout, stderr)
 
-        # Copy to final destination with user permissions, or print file if requested
+        # Print file and exit if output is set to `-`
         if output == "-":
             print_json_file(tmpfile.name)
-        else:
-            try:
-                copy2(tmpfile.name, output)
-            except FileNotFoundError:
-                logging.critical(
-                    "Could not copy the temporary SBOM from '%s' to '%s'. "
-                    "Path does not seem to exist or be accessible.",
-                    tmpfile.name,
-                    output,
-                )
-                sys.exit(1)
-            except PermissionError:
-                logging.critical(
-                    "Could not copy the temporary SBOM from '%s' to '%s'. "
-                    "User has no permission.",
-                    tmpfile.name,
-                    output,
-                )
-                sys.exit(1)
+            return "-"
 
-            logging.info("SBOM has been saved to %s", output)
+        # Set an output file in a temp location, if none given
+        if not output:
+            output = f"{gettempdir()}/sbom-{basename(tmpfile.name)}.json"
+
+        # Copy temporary SBOM file to final destination
+        try:
+            copy2(tmpfile.name, output)
+        except FileNotFoundError:
+            logging.critical(
+                "Could not copy the temporary SBOM from '%s' to '%s'. "
+                "Path does not seem to exist or be accessible.",
+                tmpfile.name,
+                output,
+            )
+            sys.exit(1)
+        except PermissionError:
+            logging.critical(
+                "Could not copy the temporary SBOM from '%s' to '%s'. User has no permission.",
+                tmpfile.name,
+                output,
+            )
+            sys.exit(1)
+
+        logging.info("SBOM has been saved to %s", output)
 
     return output

@@ -152,7 +152,7 @@ def sbom_gen_cdxgen_docker(directory: str, output: str = "") -> str:
         else:
             copy2(tmpfile.name, output)
 
-        logging.info("SBOM has been saved to %s", output)
+            logging.info("SBOM has been saved to %s", output)
 
     return output
 
@@ -160,7 +160,13 @@ def sbom_gen_cdxgen_docker(directory: str, output: str = "") -> str:
 def _run_program(program: str, *arguments) -> tuple[int, str, str]:
     cmd = [program, *arguments]
     logging.debug("Running %s", cmd)
-    ret = subprocess.run(cmd, capture_output=True, check=False)
+    try:
+        ret = subprocess.run(cmd, capture_output=True, check=False)
+    except FileNotFoundError as exc:
+        logging.critical(
+            "There was an error executing '%s'. The file does not seem to exist: %s", program, exc
+        )
+        sys.exit(1)
     code = ret.returncode
     stderr = ret.stderr.decode("UTF-8").strip()
     stdout = ret.stdout.decode("UTF-8").strip()
@@ -194,16 +200,37 @@ def sbom_gen_syft(directory: str, output: str = "") -> str:
     """
 
     with NamedTemporaryFile() as tmpfile:
+        _, syft_version, _ = _run_program("syft", "--version")
+        logging.info("Running %s to generate SBOM", syft_version)
         code, stdout, stderr = _run_program(
-            "syft", "scan", directory, "-o", f"cyclonedx-json={tmpfile.name}"
+            "syft", "scan", f"dir:{directory}", "-o", f"cyclonedx-json={tmpfile.name}"
         )
+        if code != 0:
+            logging.error("There was an error during SBOM generation: %s\n%s", stdout, stderr)
 
         # Copy to final destination with user permissions, or print file if requested
         if output == "-":
             print_json_file(tmpfile.name)
         else:
-            copy2(tmpfile.name, output)
+            try:
+                copy2(tmpfile.name, output)
+            except FileNotFoundError:
+                logging.critical(
+                    "Could not copy the temporary SBOM from '%s' to '%s'. "
+                    "Path does not seem to exist or be accessible.",
+                    tmpfile.name,
+                    output,
+                )
+                sys.exit(1)
+            except PermissionError:
+                logging.critical(
+                    "Could not copy the temporary SBOM from '%s' to '%s'. "
+                    "User has no permission.",
+                    tmpfile.name,
+                    output,
+                )
+                sys.exit(1)
 
-        logging.info("SBOM has been saved to %s", output)
+            logging.info("SBOM has been saved to %s", output)
 
     return output

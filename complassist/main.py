@@ -56,7 +56,7 @@ parser_sbom_gen.add_argument(
     "-g",
     "--generator",
     help="SBOM Generator to use",
-    choices=["cdxgen-docker", "syft"],
+    choices=["syft", "cdxgen", "cdxgen-docker"],
     required=True,
 )
 parser_sbom_gen.add_argument(
@@ -270,9 +270,9 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
         if args.sbom_command == "generate":
             if args.generator == "cdxgen-docker":
                 sbom_gen_cdxgen_docker(directory=args.directory, output=args.output)
-            elif args.generator == "syft":
+            else:
                 sbom_gen_system_program(
-                    program="syft", directory=args.directory, output=args.output
+                    program=args.generator, directory=args.directory, output=args.output
                 )
 
         # Enrich SBOM by ClearlyDefined data

@@ -182,8 +182,15 @@ def _run_syft(directory: str, tmpfile: str) -> tuple[int, str, str]:
     return _run_program("syft", "scan", f"dir:{directory}", "-o", f"cyclonedx-json={tmpfile}")
 
 
+def _run_cdxgen(directory: str, tmpfile: str) -> tuple[int, str, str]:
+    """Run cdxgen to generate SBOM"""
+    _, cdxgen_version, _ = _run_program("cdxgen", "--version")
+    logging.info("Running cdxgen %s to generate SBOM", cdxgen_version)
+    return _run_program("cdxgen", "-r", "-o", tmpfile)
+
+
 def sbom_gen_system_program(
-    program: Literal["syft"], directory: str, output: str = ""
+    program: Literal["syft", "cdxgen"], directory: str, output: str = ""
 ) -> str:
     """
     Generates a CycloneDX Software Bill of Materials (SBOM) for the project
@@ -211,6 +218,8 @@ def sbom_gen_system_program(
     with NamedTemporaryFile() as tmpfile:
         if program == "syft":
             code, stdout, stderr = _run_syft(directory=directory, tmpfile=tmpfile.name)
+        elif program == "cdxgen":
+            code, stdout, stderr = _run_cdxgen(directory=directory, tmpfile=tmpfile.name)
         else:
             logging.critical("Unsupported program provided for SBOM generation")
             sys.exit(1)

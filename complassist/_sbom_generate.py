@@ -11,6 +11,7 @@ import sys
 from os.path import abspath, basename, dirname
 from shutil import copy2
 from tempfile import NamedTemporaryFile, gettempdir
+from typing import Literal
 from uuid import uuid4
 
 import docker
@@ -174,15 +175,28 @@ def _run_program(program: str, *arguments) -> tuple[int, str, str]:
     return code, stdout, stderr
 
 
-def sbom_gen_syft(directory: str, output: str = "") -> str:
+def _run_syft(directory: str, tmpfile: str) -> tuple[int, str, str]:
+    """Run syft scan to generate SBOM"""
+    _, syft_version, _ = _run_program("syft", "--version")
+    logging.info("Running %s to generate SBOM", syft_version)
+    return _run_program("syft", "scan", f"dir:{directory}", "-o", f"cyclonedx-json={tmpfile}")
+
+
+def sbom_gen_system_program(
+    program: Literal["syft"], directory: str, output: str = ""
+) -> str:
     """
     Generates a CycloneDX Software Bill of Materials (SBOM) for the project
     located in the specified directory.
 
-    This function uses syft, a tool for generating SBOMs, as installed on the
-    system. The resulting SBOM is saved as a JSON file and its path is returned.
+    This function can use multiple applications, e.g. syft and cdxgen, as
+    installed on the system. The resulting SBOM is saved as a JSON file and its
+    path is returned.
 
     Args:
+        program (str): The program which shall be used for SBOM generation.
+        Supported choices are provided in the type hinting.
+
         directory (str): The path to the directory containing the project for
         which the SBOM is to be generated. The path can be either relative or
         absolute.
@@ -192,21 +206,18 @@ def sbom_gen_syft(directory: str, output: str = "") -> str:
 
     Returns:
         str: The absolute path to the generated SBOM JSON file.
-
-    Raises:
-        SystemExit: If the syft binary does not exist or exits with an error,
-        the function logs a critical error message and exits the program with
-        status code 1.
     """
 
     with NamedTemporaryFile() as tmpfile:
-        _, syft_version, _ = _run_program("syft", "--version")
-        logging.info("Running %s to generate SBOM", syft_version)
-        code, stdout, stderr = _run_program(
-            "syft", "scan", f"dir:{directory}", "-o", f"cyclonedx-json={tmpfile.name}"
-        )
+        if program == "syft":
+            code, stdout, stderr = _run_syft(directory=directory, tmpfile=tmpfile.name)
+        else:
+            logging.critical("Unsupported program provided for SBOM generation")
+            sys.exit(1)
+
         if code != 0:
-            logging.error("There was an error during SBOM generation: %s\n%s", stdout, stderr)
+            logging.critical("There was an error during SBOM generation: %s\n%s", stdout, stderr)
+            sys.exit(1)
 
         # Print file and exit if output is set to `-`
         if output == "-":

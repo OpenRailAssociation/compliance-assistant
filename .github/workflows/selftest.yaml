@@ -11,41 +11,77 @@ on:
   pull_request:
 
 jobs:
-  # Generate SBOM using cdxgen, but with NPMJS package, not Docker container
-  sbom-gen:
+  # Generate SBOM using syft
+  sbom-gen-syft:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: mkdir -p ~/.local/bin
+      - name: Install syft
+        run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ~/.local/bin
+      - name: Install compliance-assistant
+        uses: ./.github/actions/poetrybuild
+      - name: Generate SBOM with syft
+        run: poetry run compliance-assistant sbom generate -v -g syft -d . -o ${{ runner.temp }}/sbom-syft.json
+      - name: Store raw SBOM as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-syft
+          path: ${{ runner.temp }}/sbom-syft.json
+
+  # Generate SBOM using cdxgen (npm package)
+  sbom-gen-cdxgen:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Install cdxgen
         run: npm install -g @cyclonedx/cdxgen
-      - name: Generate CycloneDX SBOM with cdxgen
-        run: cdxgen -r . -o ${{ runner.temp }}/sbom-raw.json
+      - name: Install compliance-assistant
+        uses: ./.github/actions/poetrybuild
+      - name: Generate SBOM with cdxgen
+        run: poetry run compliance-assistant sbom generate -v -g cdxgen -d . -o ${{ runner.temp }}/sbom-cdxgen.json
       - name: Store raw SBOM as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sbom-raw
-          path: ${{ runner.temp }}/sbom-raw.json
+          name: sbom-cdxgen
+          path: ${{ runner.temp }}/sbom-cdxgen.json
 
   # Enrich the generated SBOM
   sbom-enrich:
     runs-on: ubuntu-22.04
-    needs: sbom-gen
+    needs: [sbom-gen-syft, sbom-gen-cdxgen]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/poetrybuild
-      # Download raw SBOM
-      - uses: actions/download-artifact@v4
+      # Download raw SBOMs
+      - name: Download Syft SBOM artifact
+        uses: actions/download-artifact@v4
         with:
-          name: sbom-raw
+          name: sbom-syft
+          path: ${{ runner.temp }}
+      - name: Download cdxgen SBOM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sbom-cdxgen
           path: ${{ runner.temp }}
       # Run compliance-assistant sbom-enrich
-      - name: Enrich SBOM
-        run: poetry run compliance-assistant sbom enrich -v -f ${{ runner.temp }}/sbom-raw.json -o ${{ runner.temp }}/sbom-enriched.json
-      # Show and upload enriched SBOM
-      - name: Print SBOM content
-        run: cat ${{ runner.temp }}/sbom-enriched.json
-      - name: Store enriched SBOM as artifact
+      - name: Enrich Syft SBOM
+        run: poetry run compliance-assistant sbom enrich -v -f ${{ runner.temp }}/sbom-syft.json -o ${{ runner.temp }}/sbom-syft-enriched.json
+      - name: Enrich cdxgen SBOM
+        run: poetry run compliance-assistant sbom enrich -v -f ${{ runner.temp }}/sbom-cdxgen.json -o ${{ runner.temp }}/sbom-cdxgen-enriched.json
+      # Show enriched SBOMs
+      - name: Print enriched Syft SBOM content
+        run: cat ${{ runner.temp }}/sbom-syft-enriched.json
+      - name: Print enriched cdxgen SBOM content
+        run: cat ${{ runner.temp }}/sbom-cdxgen-enriched.json
+      # Compare licensing
+      - name: Print licenses as found in Syft SBOM
+        run: poetry run compliance-assistant licensing list -f ${{ runner.temp }}/sbom-syft-enriched.json
+      - name: Print licenses as found in cdxgen SBOM
+        run: poetry run compliance-assistant licensing list -f ${{ runner.temp }}/sbom-cdxgen-enriched.json
+      # Store SBOMs as artifacts
+      - name: Store enriched SBOMs as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sbom-enriched
-          path: ${{ runner.temp }}/sbom-enriched.json
+          name: sboms-enriched
+          path: ${{ runner.temp }}/sbom-*-enriched.json

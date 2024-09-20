@@ -31,13 +31,16 @@ SPDX-License-Identifier: Apache-2.0
 - **License and Copyright Information Retrieval**: Fetch licensing and copyright details for a single package from ClearlyDefined.
 - **License compliance support**: Extract and unify licenses from SBOM, suggest possible license outbound candidates
 
-Some of these features are made possible by excellent programs such as [flict](https://github.com/vinland-technology/flict) and [cdxgen](https://github.com/CycloneDX/cdxgen).
+Some of these features are made possible by excellent programs such as [flict](https://github.com/vinland-technology/flict), [cdxgen](https://github.com/CycloneDX/cdxgen) and [syft](https://github.com/anchore/syft/).
 
 ## Requirements
 
 - Python 3.10+
 - Internet connection for accessing ClearlyDefined services
-- [Docker](https://www.docker.com/) for generating SBOMs
+- At least one SBOM generator:
+  - [syft](https://github.com/anchore/syft/)
+  - [cdxgen](https://github.com/CycloneDX/cdxgen)
+  - [Docker](https://www.docker.com/) for generating SBOMs with the dockerized cdxgen
 
 ## Installation
 
@@ -108,10 +111,11 @@ For each command, you can get detailed options, e.g., `compliance-assistant sbom
 
 ### Examples
 
-* Create an SBOM for the current directory: `compliance-assistant sbom generate -d .`
+* Create an SBOM for the current directory using [syft](https://github.com/anchore/syft/): `compliance-assistant sbom generate -g syft -d . -o /tmp/my-sbom.json`
 * Enrich an SBOM with ClearlyDefined data: `compliance-assistant sbom enrich -f /tmp/my-sbom.json -o /tmp/my-enriched-sbom.json`
 * Extract certain data from an SBOM: `compliance-assistant sbom parse -f /tmp/my-enriched-sbom.json -e purl,copyright,name`
 * Gather ClearlyDefined licensing/copyright information for one package: `compliance-assistant clearlydefined fetch -p pkg:pypi/inwx-dns-recordmaster@0.3.1`
+* Get all licenses found in the enriched SBOM: `compliance-assistant licensing list -f /tmp/my-enriched-sbom.json -o plain`
 * Get license outbound candidate based on licenses from SBOM: `compliance-assistant licensing outbound -f /tmp/my-enriched-sbom.json`
 
 ### Run as GitHub workflow
@@ -126,23 +130,8 @@ on:
     types: [published]
 
 jobs:
-  # Generate raw SBOM using cdxgen, but with NPMJS package, not Docker container
-  sbom-gen:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install cdxgen
-        run: npm install -g @cyclonedx/cdxgen
-      - name: Generate CycloneDX SBOM with cdxgen
-        run: cdxgen -r . -o ${{ runner.temp }}/sbom-raw.json
-      - name: Store raw SBOM as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sbom-raw
-          path: ${{ runner.temp }}/sbom-raw.json
-
-  # Enrich the generated SBOM
-  sbom-enrich:
+  # Generate the SBOM with syft and enrich the generated SBOM
+  sbom-generate-and-enrich:
     runs-on: ubuntu-22.04
     needs: sbom-gen
     steps:
@@ -154,12 +143,14 @@ jobs:
           cache: "pip"
       - name: Install compliance-assistant
         run: pip install compliance-assistant
-      # Download raw SBOM
-      - uses: actions/download-artifact@v4
-        with:
-          name: sbom-raw
-          path: ${{ runner.temp }}
-      # Run compliance-assistant sbom-enrich
+      # Install syft
+      - run: mkdir -p ~/.local/bin
+      - name: Install syft
+        run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ~/.local/bin
+      # Generate SBOM with syft via compliance-assistant
+      - name: Generate SBOM with syft
+        run: poetry run compliance-assistant sbom generate -g syft -d . -o ${{ runner.temp }}/sbom-raw.json
+      # Enrich SBOM with compliance-assistant
       - name: Enrich SBOM
         run: compliance-assistant sbom enrich -f ${{ runner.temp }}/sbom-raw.json -o ${{ runner.temp }}/sbom-enriched.json
       # Upload enriched SBOM as artifact

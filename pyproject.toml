@@ -46,7 +46,7 @@ mypy = "^1.10.0"
 pylint = "^3.2.3"
 black = "^24.4.2"
 isort = "^5.13.2"
-bump2version = "^1.0.1"
+bump-my-version = "^0.26.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -63,3 +63,16 @@ line-length = 100
 [tool.mypy]
 files = ["complassist/*.py"]
 disable_error_code = ["import-untyped"]
+
+# Bump-My-Version
+[tool.bumpversion]
+commit = true
+tag = true
+allow_dirty = false
+tag_name = "v{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+regex = true
+search = "^version = \"{current_version}\""
+replace = "version = \"{new_version}\""

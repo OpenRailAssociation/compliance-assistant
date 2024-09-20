@@ -22,7 +22,7 @@ from ._helpers import dict_to_json
 from ._licensing import get_outbound_candidate, list_all_licenses
 from ._logging import configure_logger
 from ._sbom_enrich import enrich_sbom_with_clearlydefined
-from ._sbom_generate import generate_cdx_sbom
+from ._sbom_generate import sbom_gen_cdxgen_docker, sbom_gen_system_program
 from ._sbom_parse import extract_items_from_cdx_sbom
 
 # Main parser with root-level flags
@@ -51,6 +51,13 @@ parser_sbom_gen = subparser_sbom.add_parser(
     "generate",
     help="Generate a CycloneDX SBOM using the cdxgen Docker image",
     parents=[common_flags],
+)
+parser_sbom_gen.add_argument(
+    "-g",
+    "--generator",
+    help="SBOM Generator to use",
+    choices=["syft", "cdxgen", "cdxgen-docker"],
+    required=True,
 )
 parser_sbom_gen.add_argument(
     "-d",
@@ -261,7 +268,12 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
     # SBOM commands
     if args.command == "sbom":
         if args.sbom_command == "generate":
-            generate_cdx_sbom(directory=args.directory, output=args.output)
+            if args.generator == "cdxgen-docker":
+                sbom_gen_cdxgen_docker(directory=args.directory, output=args.output)
+            else:
+                sbom_gen_system_program(
+                    program=args.generator, directory=args.directory, output=args.output
+                )
 
         # Enrich SBOM by ClearlyDefined data
         elif args.sbom_command == "enrich":

@@ -36,7 +36,6 @@ def replacer(string: str, replacement_dict: dict) -> str:
     """
     if string in replacement_dict:
         replacement = replacement_dict.get(string, "")
-        logging.debug("Replace '%s' by '%s'", string, replacement)
         return replacement
 
     return string

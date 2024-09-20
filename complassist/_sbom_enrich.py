@@ -148,14 +148,20 @@ def _enrich_component_with_cd_data(
     """
     # Get purl, original licenses, and short/simplified licenses data from component
     raw_data = extract_items_from_component(
-        component, ["purl", "licenses", "licenses-short", "copyright"], flict_simplify=True
+        component, ["name", "purl", "licenses", "licenses-short", "copyright"], flict_simplify=True
     )
     # Put raw data into separate variables, slightly adapted
+    name = raw_data["name"]
     purl = raw_data["purl"]
     sbom_licenses_item: list[dict] = raw_data["licenses"]
     sbom_licenses_short_item: list[dict] = raw_data["licenses-short"]
     sbom_license = licenses_short_to_string(sbom_licenses_short_item)
     sbom_copyright = raw_data["copyright"]
+
+    # If no purl in component, there is no CD data we can enter. Abort here
+    if not purl:
+        logging.debug("No purl for component '%s', therefore no enrichment of the SBOM", name)
+        return
 
     # Get fetched licensing/copyright data from ClearlyDefined
     cd_license = clearlydefined_data[purl].get("license")
@@ -260,9 +266,15 @@ def enrich_sbom_with_clearlydefined(
 
     # Loop all contained components, and collect ClearlyDefined data
     clearlydefined_data: dict[str, dict[str, str]] = {}
-    all_purls: list[str] = [
-        c["purl"] for c in extract_items_from_cdx_sbom(sbom_file, information=["purl"])
-    ]
+    all_purls: list[str] = []
+
+    # Filter components without PURLs
+    for pkg in extract_items_from_cdx_sbom(sbom_file, information=["name", "purl"]):
+        if purl := pkg.get("purl"):
+            all_purls.append(purl)
+        else:
+            logging.info("No purl available for component: %s", pkg.get("name", ""))
+
     if in_batches:
         # Split all purls in batches of `batch_size` size
         purls_batches: list[list[str]] = [

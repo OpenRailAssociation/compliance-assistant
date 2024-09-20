@@ -64,7 +64,11 @@ def purl_to_cd_coordinates(purl: str) -> str:
     }
     coordinates["provider"] = replacer(coordinates["type"], type_to_provider)
 
-    return "/".join([v for _, v in coordinates.items()])
+    coordinates_string = "/".join([v for _, v in coordinates.items()])
+
+    logging.debug("Converted '%s' to '%s'", purl, coordinates_string)
+
+    return coordinates_string
 
 
 def _cdapi_call(
@@ -74,7 +78,7 @@ def _cdapi_call(
     basepath: str = "definitions",
     json_dict: dict | list | None = None,
     **params: str,
-) -> dict:
+) -> dict | None:
     """
     Makes a request to the ClearlyDefined API.
 
@@ -111,12 +115,19 @@ def _cdapi_call(
     # Return JSON response if possible
     try:
         return result.json()
-    except JSONDecodeError:
+    except (JSONDecodeError, AttributeError):
         logging.debug("JSON return is no valid JSON")
-        return {"result": result.text}
-    except AttributeError:
-        logging.warning("API call did not return a valid response. No ClearlyDefined returned")
-        return {"result": "error"}
+        if basepath != "harvest":
+            try:
+                error_msg = result.content.decode("UTF-8")
+            except:  # pylint: disable=bare-except
+                error_msg = result.content
+            logging.warning(
+                "Unexpected JSON decoding error as result from %s: %s",
+                url,
+                error_msg,
+            )
+        return None
 
 
 def _extract_license_copyright(cd_api_response: dict) -> tuple[str, str]:
@@ -204,53 +215,74 @@ def get_clearlydefined_license_and_copyright(coordinates: str) -> tuple[str, str
     """
     api_return = _cdapi_call(coordinates, expand="-files")
 
-    declared_license, copyrights = _extract_license_copyright(api_return)
+    if api_return:
+        declared_license, copyrights = _extract_license_copyright(api_return)
 
-    # Declared license couldn't be extracted. Add to harvest
-    if not declared_license:
-        _handle_missing_license_and_request_harvest(coordinates)
+        # Declared license couldn't be extracted. Add to harvest
+        if not declared_license:
+            _handle_missing_license_and_request_harvest(coordinates)
 
-    return declared_license, copyrights
+        return declared_license, copyrights
+
+    # If no valid API result, return empty license and copyright
+    return "", ""
 
 
 def get_clearlydefined_license_and_copyright_in_batches(
     purls: list[str],
 ) -> dict[str, tuple[str, str]]:
     """
-    Retrieves the declared license for multiple purls from ClearlyDefined.
+    Retrieves the declared license and detected copyright for multiple Package
+    URLs from ClearlyDefined.
 
-    Queries the ClearlyDefined API to get the declared license for the provided
-    packages via Package URLs. If no license is found, it initiates a
-    harvest request.
+    Queries the ClearlyDefined API to retrieve both the declared license and the
+    detected copyright attributions for multiple packages specified via Package
+    URLs. If no declared license is found for a package, a harvest request is
+    initiated.
 
     Args:
-        coordinates (str): The ClearlyDefined coordinates or Package URL for
-        which to retrieve the license.
+        purls (list[str]): A list of Package URLs (purls) for which to retrieve
+        the license and copyright information.
 
     Returns:
         tuple[str, str]: A tuple containing:
             - The declared license as a string, or an empty string if not found.
             - The detected copyright attributions as a single string, with each
-              attribution separated by a newline, or an empty string if not
+              attribution separated by a newline, or an empty string if none are
               found.
+
+            Returns a dict of the provided purls and empty tuples if the
+            ClearlyDefined API did not return valid data.
     """
+    # Create connections between coordinates <-> purl
     coordinates_purls = {purl_to_cd_coordinates(purl): purl for purl in purls}
+    # Request the CD API for the coordinates
     api_return = _cdapi_call(
         path="", method="POST", json_dict=list(coordinates_purls.keys()), expand="-files"
     )
 
-    result: dict[str, tuple[str, str]] = {}
-    for pkg_coordinates, cd_data in api_return.items():
-        pkg_purl = coordinates_purls[pkg_coordinates]
-        declared_license, copyrights = _extract_license_copyright(cd_data)
+    if api_return:
+        result: dict[str, tuple[str, str]] = {}
+        for pkg_coordinates, cd_data in api_return.items():
+            # Fetch the corresponding PURL for the coordinates
+            pkg_purl = coordinates_purls[pkg_coordinates]
 
-        # Declared license couldn't be extracted. Add to harvest
-        if not declared_license:
-            _handle_missing_license_and_request_harvest(pkg_coordinates)
+            # Extract license and copyright data from the CD API return
+            declared_license, copyrights = _extract_license_copyright(cd_data)
 
-        result[pkg_purl] = (declared_license, copyrights)
+            # Declared license couldn't be extracted. Add to harvest
+            if not declared_license:
+                _handle_missing_license_and_request_harvest(pkg_coordinates)
 
-    return result
+            result[pkg_purl] = (declared_license, copyrights)
+
+        return result
+
+    logging.warning(
+        "No valid data from ClearlyDefined received for the following packages: %s",
+        ", ".join(purls),
+    )
+    return {purl: ("", "") for purl in purls}
 
 
 def print_clearlydefined_result(results: tuple[str, str]) -> None:

@@ -17,12 +17,14 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Install poetry
+      run: pipx install poetry
+      shell: bash
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: ${{ inputs.python }}
+        cache: "poetry"
     - name: Install dependencies
-      run: |
-        pip install poetry
-        poetry install --no-interaction ${{ inputs.poetry_args }}
+      run: poetry install --no-interaction ${{ inputs.poetry_args }}
       shell: bash

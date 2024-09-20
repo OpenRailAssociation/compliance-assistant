@@ -158,11 +158,13 @@ def sbom_gen_cdxgen_docker(directory: str, output: str = "") -> str:
     return output
 
 
-def _run_program(program: str, *arguments) -> tuple[int, str, str]:
+def _run_program(
+    program: str, *arguments, working_directory: str | None = None
+) -> tuple[int, str, str]:
     cmd = [program, *arguments]
     logging.debug("Running %s", cmd)
     try:
-        ret = subprocess.run(cmd, capture_output=True, check=False)
+        ret = subprocess.run(cmd, cwd=working_directory, capture_output=True, check=False)
     except FileNotFoundError as exc:
         logging.critical(
             "There was an error executing '%s'. The file does not seem to exist: %s", program, exc
@@ -186,7 +188,7 @@ def _run_cdxgen(directory: str, tmpfile: str) -> tuple[int, str, str]:
     """Run cdxgen to generate SBOM"""
     _, cdxgen_version, _ = _run_program("cdxgen", "--version")
     logging.info("Running cdxgen %s to generate SBOM", cdxgen_version)
-    return _run_program("cdxgen", "-r", "-o", tmpfile)
+    return _run_program("cdxgen", "-r", "-o", tmpfile, working_directory=directory)
 
 
 def sbom_gen_system_program(

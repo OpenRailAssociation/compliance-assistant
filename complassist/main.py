@@ -12,11 +12,12 @@ import argparse
 import logging
 import sys
 
+from purltools import purl2clearlydefined
+
 from . import __version__
 from ._clearlydefined import (
     get_clearlydefined_license_and_copyright,
     print_clearlydefined_result,
-    purl_to_cd_coordinates,
 )
 from ._helpers import dict_to_json
 from ._licensing import get_outbound_candidate, list_all_licenses
@@ -306,11 +307,11 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
     elif args.command == "clearlydefined":
         # ClearlyDefined conversion
         if args.clearlydefined_command == "convert":
-            print(purl_to_cd_coordinates(purl=args.purl))
+            print(purl2clearlydefined(purl=args.purl))
 
         elif args.clearlydefined_command == "fetch":
             if args.purl:
-                coordinates = purl_to_cd_coordinates(purl=args.purl)
+                coordinates = purl2clearlydefined(purl=args.purl)
             else:
                 coordinates = args.coordinates
 

@@ -34,11 +34,11 @@ compliance-assistant = 'complassist.main:main'
 
 [tool.poetry.dependencies]
 python = "^3.10"
-packageurl-python = "^0.15.1"
 requests = "^2.32.3"
 flict = "^1.2.14"
 docker = "^7.1.0"
 license-expression = "^30.3.0"
+purl-tools = "^0.1.0"
 
 
 [tool.poetry.group.dev.dependencies]

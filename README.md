@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # Compliance Assistant
 
+![OpenRail Administrative Project](https://openrailassociation.org/badges/openrail-project-admin.svg)
 [![Test suites](https://github.com/OpenRailAssociation/compliance-assistant/actions/workflows/test.yaml/badge.svg)](https://github.com/OpenRailAssociation/compliance-assistant/actions/workflows/test.yaml)
 [![REUSE status](https://api.reuse.software/badge/github.com/OpenRailAssociation/compliance-assistant)](https://api.reuse.software/info/github.com/OpenRailAssociation/compliance-assistant)
 [![The latest version of Compliance Assistant can be found on PyPI.](https://img.shields.io/pypi/v/compliance-assistant.svg)](https://pypi.org/project/compliance-assistant/)

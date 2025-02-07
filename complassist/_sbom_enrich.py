@@ -7,11 +7,12 @@
 import logging
 from datetime import datetime
 
+from purltools import purl2clearlydefined
+
 from . import __version__
 from ._clearlydefined import (
     get_clearlydefined_license_and_copyright,
     get_clearlydefined_license_and_copyright_in_batches,
-    purl_to_cd_coordinates,
 )
 from ._helpers import extract_excerpt, read_json_file, write_json_file
 from ._sbom_parse import (
@@ -291,7 +292,7 @@ def enrich_sbom_with_clearlydefined(
         for purl in all_purls:
             logging.info("Getting ClearlyDefined data for %s", purl)
             cd_license, cd_copyright = get_clearlydefined_license_and_copyright(
-                coordinates=purl_to_cd_coordinates(purl)
+                coordinates=purl2clearlydefined(purl)
             )
             clearlydefined_data[purl] = {"license": cd_license, "copyright": cd_copyright}
 

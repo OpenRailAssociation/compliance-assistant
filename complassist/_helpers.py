@@ -17,30 +17,6 @@ def dict_to_json(data: dict) -> str:
     return json.dumps(data, indent=2, sort_keys=False)
 
 
-def replacer(string: str, replacement_dict: dict) -> str:
-    """
-    Replaces a string based on a replacement dictionary.
-
-    If the string matches a key in the replacement dictionary, it is replaced by
-    the corresponding value. If no match is found, the original string is
-    returned.
-
-    Args:
-        string (str): The string to be checked and possibly replaced.
-        replacement_dict (dict): A dictionary where keys are strings to be
-        replaced and values are their replacements.
-
-    Returns:
-        str: The replaced string if a match is found, otherwise the original
-        string.
-    """
-    if string in replacement_dict:
-        replacement = replacement_dict.get(string, "")
-        return replacement
-
-    return string
-
-
 def read_json_file(path: str) -> dict:
     """Open a JSON file and return it as dict"""
     with open(path, "r", encoding="UTF-8") as jsonfile:

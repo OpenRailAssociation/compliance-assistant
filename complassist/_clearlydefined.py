@@ -5,70 +5,13 @@
 """Functions concerning working with ClearlyDefined"""
 
 import logging
-import sys
 from os.path import join as pathjoin
 from urllib.parse import urljoin
 
-from packageurl import PackageURL
+from purltools import purl2clearlydefined
 from requests.exceptions import JSONDecodeError
 
-from ._helpers import make_request_with_retry, replacer
-
-
-def purl_to_cd_coordinates(purl: str) -> str:
-    """
-    Converts a Package URL (purl) to ClearlyDefined coordinates.
-
-    Parses the purl and translates it into a coordinate format compatible with
-    ClearlyDefined, handling necessary type conversions and provider mappings.
-
-    Args:
-        purl (str): The Package URL to be converted.
-
-    Returns:
-        str: The ClearlyDefined coordinates derived from the purl.
-
-    Raises:
-        SystemExit: If the provided purl is not valid, the function logs a
-        critical error and exits.
-    """
-    try:
-        purl_obj = PackageURL.from_string(purl)
-    except ValueError as exc:
-        logging.critical("Package URL '%s' does not seem to be a valid purl: %s", purl, exc)
-        sys.exit(1)
-
-    logging.debug("purl string '%s' converted to purl object '%s'", purl, repr(purl_obj))
-
-    # Convert to dict, replacing empty values with "-"
-    p = purl_obj.to_dict(empty="-")
-
-    # Fix types that are different in purl and CD
-    type_fix = {"cargo": "crate", "github": "git"}
-
-    coordinates: dict = {
-        "type": replacer(p.get("type", ""), type_fix),
-        "provider": "",
-        "namespace": p.get("namespace"),
-        "name": p.get("name"),
-        "version": p.get("version"),
-    }
-
-    # Update coordinates with provider, based on type
-    type_to_provider = {
-        "crate": "cratesio",
-        "git": "github",
-        "maven": "mavencentral",
-        "npm": "npmjs",
-        "pypi": "pypi",
-    }
-    coordinates["provider"] = replacer(coordinates["type"], type_to_provider)
-
-    coordinates_string = "/".join([v for _, v in coordinates.items()])
-
-    logging.debug("Converted '%s' to '%s'", purl, coordinates_string)
-
-    return coordinates_string
+from ._helpers import make_request_with_retry
 
 
 def _cdapi_call(
@@ -255,7 +198,7 @@ def get_clearlydefined_license_and_copyright_in_batches(
             ClearlyDefined API did not return valid data.
     """
     # Create connections between coordinates <-> purl
-    coordinates_purls = {purl_to_cd_coordinates(purl): purl for purl in purls}
+    coordinates_purls = {purl2clearlydefined(purl): purl for purl in purls}
     # Request the CD API for the coordinates
     api_return = _cdapi_call(
         path="", method="POST", json_dict=list(coordinates_purls.keys()), expand="-files"

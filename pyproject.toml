@@ -44,7 +44,7 @@ purl-tools = "^0.2.0"
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.10.0"
 pylint = "^3.2.3"
-black = "^24.4.2"
+black = "^25.0.0"
 isort = "^6.0.0"
 bump-my-version = "^1.0.0"
 

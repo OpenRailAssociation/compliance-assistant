@@ -46,7 +46,7 @@ mypy = "^1.10.0"
 pylint = "^3.2.3"
 black = "^24.4.2"
 isort = "^5.13.2"
-bump-my-version = "^0.26.1"
+bump-my-version = "^0.33.0"
 
 [build-system]
 requires = ["poetry-core"]

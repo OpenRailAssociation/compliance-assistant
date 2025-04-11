@@ -13,7 +13,7 @@ on:
 jobs:
   # Generate SBOM using syft
   sbom-gen-syft:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - run: mkdir -p ~/.local/bin
@@ -31,7 +31,7 @@ jobs:
 
   # Generate SBOM using cdxgen (npm package)
   sbom-gen-cdxgen:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Install cdxgen
@@ -48,7 +48,7 @@ jobs:
 
   # Enrich the generated SBOM
   sbom-enrich:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [sbom-gen-syft, sbom-gen-cdxgen]
     steps:
       - uses: actions/checkout@v4

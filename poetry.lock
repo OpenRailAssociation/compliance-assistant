@@ -715,13 +715,13 @@ wcwidth = "*"
 
 [[package]]
 name = "purl-tools"
-version = "0.1.0"
+version = "0.2.0"
 description = "A small library that supports with various tasks around Package URLs"
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "purl_tools-0.1.0-py3-none-any.whl", hash = "sha256:a06079d97b19a5de936fe4a4109ecb62e12b97304ee45e55efc69e2f0cc37015"},
-    {file = "purl_tools-0.1.0.tar.gz", hash = "sha256:c14960a2aec96d21387edc0934e3288c632f2bc86d11338f7a82ec968a172ec8"},
+    {file = "purl_tools-0.2.0-py3-none-any.whl", hash = "sha256:8601ac061d70ae81b6ee6ce66ebd7a9872689332e890a493fa04850b24e11beb"},
+    {file = "purl_tools-0.2.0.tar.gz", hash = "sha256:591327ad2c5f7dac50b95e3c1b9ce83be304bde189cba88ded728000047fd5cb"},
 ]
 
 [package.dependencies]
@@ -1314,4 +1314,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2ad6393fb306743c6df78a304823aac5a82d03e452c093c4f7dd2f6f7d27d944"
+content-hash = "98a49fe8f8e30e492286a3a6b0d618fa1a9bf6da04de2778c44ebbf00541f6a6"

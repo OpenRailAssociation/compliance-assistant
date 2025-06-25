@@ -538,13 +538,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "license-expression"
-version = "30.4.2"
+version = "30.4.3"
 description = "license-expression is a comprehensive utility library to parse, compare, simplify and normalize license expressions (such as SPDX license expressions) using boolean logic."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "license_expression-30.4.2.tar.gz", hash = "sha256:0b6e67dab0e7047c5ae61124d003baf86bd13ff9523e09c1ca81a504d8a444f9"},
+    {file = "license_expression-30.4.3-py3-none-any.whl", hash = "sha256:fd3db53418133e0eef917606623bc125fbad3d1225ba8d23950999ee87c99280"},
+    {file = "license_expression-30.4.3.tar.gz", hash = "sha256:49f439fea91c4d1a642f9f2902b58db1d42396c5e331045f41ce50df9b40b1f2"},
 ]
 
 [package.dependencies]

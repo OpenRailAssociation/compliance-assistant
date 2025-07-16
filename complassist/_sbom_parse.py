@@ -102,7 +102,7 @@ def extract_items_from_component(component: dict, items: list, flict_simplify: b
     # logging.debug(
     #     "Handling component: purl = %s, name = %s", component.get("purl"), component.get("name")
     # )
-    extraction = {}
+    extraction: dict = {}
     # Loop requested data points for extraction
     for item in items:
         # `licenses-short` is a custom data point that creates a licenses

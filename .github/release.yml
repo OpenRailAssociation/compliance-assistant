@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: CC-BY-4.0
+# SPDX-FileCopyrightText: 2025 DB Systel GmbH
+
+changelog:
+  categories:
+    - title: Dependencies
+      labels:
+        - Renovate
+        - dependencies
+    - title: Features and Fixes
+      labels:
+        - "*"

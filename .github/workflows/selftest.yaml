@@ -24,7 +24,7 @@ jobs:
       - name: Generate SBOM with syft
         run: poetry run compliance-assistant sbom generate -v -g syft -d . -o ${{ runner.temp }}/sbom-syft.json
       - name: Store raw SBOM as artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: sbom-syft
           path: ${{ runner.temp }}/sbom-syft.json
@@ -41,7 +41,7 @@ jobs:
       - name: Generate SBOM with cdxgen
         run: poetry run compliance-assistant sbom generate -v -g cdxgen -d . -o ${{ runner.temp }}/sbom-cdxgen.json
       - name: Store raw SBOM as artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: sbom-cdxgen
           path: ${{ runner.temp }}/sbom-cdxgen.json
@@ -55,12 +55,12 @@ jobs:
       - uses: ./.github/actions/poetrybuild
       # Download raw SBOMs
       - name: Download Syft SBOM artifact
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           name: sbom-syft
           path: ${{ runner.temp }}
       - name: Download cdxgen SBOM artifact
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           name: sbom-cdxgen
           path: ${{ runner.temp }}
@@ -81,7 +81,7 @@ jobs:
         run: poetry run compliance-assistant licensing list -f ${{ runner.temp }}/sbom-cdxgen-enriched.json
       # Store SBOMs as artifacts
       - name: Store enriched SBOMs as artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: sboms-enriched
           path: ${{ runner.temp }}/sbom-*-enriched.json

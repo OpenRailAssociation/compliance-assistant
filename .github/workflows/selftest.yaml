@@ -15,7 +15,7 @@ jobs:
   sbom-gen-syft:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       - run: mkdir -p ~/.local/bin
       - name: Install syft
         run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ~/.local/bin
@@ -33,7 +33,7 @@ jobs:
   sbom-gen-cdxgen:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       - name: Install cdxgen
         run: npm install -g @cyclonedx/cdxgen
       - name: Install compliance-assistant
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [sbom-gen-syft, sbom-gen-cdxgen]
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       - uses: ./.github/actions/poetrybuild
       # Download raw SBOMs
       - name: Download Syft SBOM artifact

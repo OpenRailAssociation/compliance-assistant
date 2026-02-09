@@ -197,19 +197,17 @@ def get_clearlydefined_license_and_copyright_in_batches(
             Returns a dict of the provided purls and empty tuples if the
             ClearlyDefined API did not return valid data.
     """
-    # Create connections between coordinates <-> purl
-    coordinates_purls = {purl2clearlydefined(purl): purl for purl in purls}
+    # Create connections between purl <-> coordinates
+    # It might happen that a coordinate describes more than one purl (e.g. SHAs for GitHub tags)
+    purls_coordinates = {purl: purl2clearlydefined(purl) for purl in purls}
     # Request the CD API for the coordinates
     api_return = _cdapi_call(
-        path="", method="POST", json_dict=list(coordinates_purls.keys()), expand="-files"
+        path="", method="POST", json_dict=list(purls_coordinates.values()), expand="-files"
     )
 
     if api_return:
         result: dict[str, tuple[str, str]] = {}
         for pkg_coordinates, cd_data in api_return.items():
-            # Fetch the corresponding PURL for the coordinates
-            pkg_purl = coordinates_purls[pkg_coordinates]
-
             # Extract license and copyright data from the CD API return
             declared_license, copyrights = _extract_license_copyright(cd_data)
 
@@ -217,7 +215,19 @@ def get_clearlydefined_license_and_copyright_in_batches(
             if not declared_license:
                 _handle_missing_license_and_request_harvest(pkg_coordinates)
 
-            result[pkg_purl] = (declared_license, copyrights)
+            # Fetch all corresponding PURLs for the coordinates
+            described_purls = [
+                purl
+                for purl, coordinates in purls_coordinates.items()
+                if coordinates == pkg_coordinates
+            ]
+            for pkg_purl in described_purls:
+                logging.debug(
+                    "Adding CD data for PURL %s (coordinates: %s) to result",
+                    pkg_purl,
+                    pkg_coordinates,
+                )
+                result[pkg_purl] = (declared_license, copyrights)
 
         return result
 

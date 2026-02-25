@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
 - **License and Copyright Information Retrieval**: Fetch licensing and copyright details for a single package from ClearlyDefined.
 - **License compliance support**: Extract and unify licenses from SBOM, suggest possible license outbound candidates
 
-Some of these features are made possible by excellent programs such as [flict](https://github.com/vinland-technology/flict), [cdxgen](https://github.com/CycloneDX/cdxgen) and [syft](https://github.com/anchore/syft/).
+Some of these features are made possible by excellent programs such as [licomp-toolkit](https://github.com/hesa/licomp-toolkit), [cdxgen](https://github.com/CycloneDX/cdxgen) and [syft](https://github.com/anchore/syft/).
 
 ## Requirements
 

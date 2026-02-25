@@ -1,71 +1,51 @@
 # SPDX-FileCopyrightText: 2024 DB Systel GmbH
+# SPDX-FileCopyrightText: 2025 Henrik Sandklef <hesa@sandklef.com>
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Wrapper for some flict operations"""
+"""Wrapper for some licomp-toolkit operations"""
 
 import logging
-import subprocess
+
+from licomp_toolkit.format import LicompToolkitFormatter
+from licomp_toolkit.toolkit import LicompToolkit
+from licomp_toolkit.suggester import OutboundSuggester
+
+USECASE = 'library'
+PROVISIONING = 'binary-distribution'
+RESOURCES = ['licomp_reclicense']
 
 
-# We need to run flict as subprocess as usage as library is too complicated
-def _run_flict(
-    command: str,
-    *arguments,
-    options: list | None = None,
-    warn_on_error: bool = True,
-) -> tuple[int, str, str]:
-    """
-    Run flict with a command (e.g. 'verify') and a list of arguments
-    (e.g. '-il', 'GPL-2.0-only', '-ol', 'MIT'), and a list of general options (e.g. ["-ip"])
-    Return: exit code, stdout, stderr
-    """
-    if options is None:
-        options = []
-    cmd = ["flict", *options, command, *arguments]
-    logging.debug("Running flict: %s", cmd)
-    ret = subprocess.run(cmd, capture_output=True, check=False)
-    code = ret.returncode
-    stderr = ret.stderr.decode("UTF-8").strip()
-    stdout = ret.stdout.decode("UTF-8").strip()
-    if code != 0:
-        # If only warning requested, only log error, return normal output
-        if warn_on_error:
-            logging.warning(
-                "flict exited with an error (%s): %s",
-                code,
-                stderr,
-            )
+def _format(output_format: str):
+    return {'plain': 'text'}.get(output_format, 'json')
 
-    return code, stdout, stderr
-
-
-def flict_simplify_license(expression: str, output_format: str, no_relicensing: bool = True) -> str:
-    """Simplify a license expression using flict"""
+def licomp_toolkit_simplify_license(expression: str, output_format: str, no_relicensing: bool = True) -> str:
+    """Simplify a license expression using licomp-toolkit"""
     options = ["-of", output_format]
-    if no_relicensing:
-        options.append("-nr")
-    _, simplified, _ = _run_flict("simplify", expression, options=options)
-
-    logging.debug("Simplified '%s' to '%s' using flict", expression, simplified)
-
+    licomp_toolkit = LicompToolkit()
+    simplified = licomp_toolkit.simplify(expression)
+    logging.debug("Simplified '%s' to '%s' using licomp-toolkit", expression, simplified)
     return simplified
 
 
-def flict_simplify_license_list(expressions: list[str]) -> list[str]:
+def licomp_toolkit_simplify_license_list(expressions: list[str]) -> list[str]:
     """Simplify a list of license expressions"""
-    simplified = []
-    for lic in expressions:
-        simplified.append(flict_simplify_license(expression=lic, output_format="text"))
-
+    licomp_toolkit = LicompToolkit()
+    simplified = [licomp_toolkit.simplify(lic) for lic in expressions]
     return list(set(simplified))
 
 
-def flict_outbound_candidate(expression: str, output_format: str) -> str:
-    """Get possible outbound license candidates using flict"""
-    # TODO: `-el` would make this command more helpful but it has an error:
-    # https://github.com/vinland-technology/flict/issues/391
-    _, outbound_candidate, _ = _run_flict(
-        "outbound-candidate", expression, options=["-nr", "-of", output_format]
-    )
-    return outbound_candidate
+def licomp_toolkit_outbound_candidate(expression: str, output_format: str) -> str:
+    """Get possible outbound license candidates using licomp-toolkit"""
+    suggester = OutboundSuggester()
+    licomp_toolkit = LicompToolkit()
+    licenses_to_check = licomp_toolkit.supported_licenses()
+    outbound_candidates = suggester.compat_licenses(expression,
+                                                    USECASE,
+                                                    PROVISIONING,
+                                                    licenses_to_check,
+                                                    RESOURCES)
+    formatter = LicompToolkitFormatter.formatter(_format(output_format))
+    formatted_candidates = formatter.format_licomp_licenses(outbound_candidates)
+    return formatted_candidates
+

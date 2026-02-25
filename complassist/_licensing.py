@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2024 DB Systel GmbH
+# SPDX-FileCopyrightText: 2025 Henrik Sandklef <hesa@sandklef.com>
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -8,23 +9,23 @@ import logging
 
 from license_expression import ExpressionError, Licensing, get_spdx_licensing
 
-from ._flict import (
-    flict_outbound_candidate,
-    flict_simplify_license,
-    flict_simplify_license_list,
+from ._licomp_toolkit import (
+    licomp_toolkit_outbound_candidate,
+    licomp_toolkit_simplify_license,
+    licomp_toolkit_simplify_license_list,
 )
 from ._sbom_parse import extract_items_from_cdx_sbom
 
 
 def _extract_license_expression_and_names_from_sbom(
-    sbom_path: str, flict_simplify: bool = False
+    sbom_path: str, licomp_toolkit_simplify: bool = False
 ) -> tuple[list[str], list[str]]:
     """Extract all SPDX expressions and license names from an SBOM"""
     lic_expressions = []
     lic_names = []
 
     for item in extract_items_from_cdx_sbom(
-        sbom_path, information=["name", "purl", "licenses-short"], flict_simplify=flict_simplify
+        sbom_path, information=["name", "purl", "licenses-short"], licomp_toolkit_simplify=licomp_toolkit_simplify
     ):
         licenses_short: list[dict] = item.get("licenses-short", [])
 
@@ -42,20 +43,20 @@ def _extract_license_expression_and_names_from_sbom(
 
     # Make expressions and names unique, and sort them
     expressions = sorted(list(set(lic_expressions)))
-    # If using flict, simplify these found licenses. Will reduce possible
+    # If using licomp_toolkit, simplify these found licenses. Will reduce possible
     # duplicates and fix problematic SPDX expressions (e.g. MPL-2.0+)
     # That's far more performant than doing that for each license in the SBOM
-    if flict_simplify:
-        expressions = flict_simplify_license_list(expressions)
+    if licomp_toolkit_simplify:
+        expressions = licomp_toolkit_simplify_license_list(expressions)
     names = sorted(list(set(lic_names)))
 
     return expressions, names
 
 
-def list_all_licenses(sbom_path: str, flict_simplify: bool = False) -> list[str]:
+def list_all_licenses(sbom_path: str, licomp_toolkit_simplify: bool = False) -> list[str]:
     """List all detected licenses of an SBOM, unified and sorted"""
     expressions, names = _extract_license_expression_and_names_from_sbom(
-        sbom_path=sbom_path, flict_simplify=flict_simplify
+        sbom_path=sbom_path, licomp_toolkit_simplify=licomp_toolkit_simplify
     )
 
     # Combine both SPDX expressions and names, sort and unify again
@@ -95,7 +96,7 @@ def _craft_single_spdx_expression(licenses: list[str]):
 def get_outbound_candidate(sbom_path: str, simplify: bool = True) -> dict[str, str | list[str]]:
     """Get license outbound candidates from an SBOM"""
     logging.info("Extracting, simplifying and validating found licenses. This can take a while")
-    licenses_in_sbom = list_all_licenses(sbom_path, flict_simplify=simplify)
+    licenses_in_sbom = list_all_licenses(sbom_path, licomp_toolkit_simplify=simplify)
 
     # Check whether all licenses are valid SPDX expressions
     licenses = _validate_spdx_licenses(licenses_in_sbom)
@@ -104,12 +105,12 @@ def get_outbound_candidate(sbom_path: str, simplify: bool = True) -> dict[str, s
     expression = _craft_single_spdx_expression(licenses)
     if simplify:
         logging.debug("Simplify crafted license expression %s", expression)
-        expression = flict_simplify_license(expression, output_format="text")
+        expression = licomp_toolkit_simplify_license(expression, output_format="text")
         logging.debug("Simplified licenses expression: %s", expression)
 
     # Get outbound candidate
     logging.info("Calculating possible outbound candidates")
-    outbound_candidate: str = flict_outbound_candidate(expression, output_format="text")
+    outbound_candidate: str = licomp_toolkit_outbound_candidate(expression, output_format="text")
 
     return {
         "licenses_in_sbom": licenses_in_sbom,

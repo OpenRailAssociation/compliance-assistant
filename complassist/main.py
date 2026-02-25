@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2024 DB Systel GmbH
+# SPDX-FileCopyrightText: 2025 Henrik Sandklef <hesa@sandklef.com>
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -139,7 +140,7 @@ parser_sbom_read.add_argument(
 )
 parser_sbom_read.add_argument(
     "--no-simplify",
-    help="Do not simplify SPDX license expression using flict. May increase speed",
+    help="Do not simplify SPDX license expression using licomp_toolkit. May increase speed",
     action="store_true",
 )
 
@@ -224,7 +225,7 @@ parser_licensing_list.add_argument(
 )
 parser_licensing_list.add_argument(
     "--no-simplify",
-    help="Do not simplify SPDX license expression using flict. May increase speed",
+    help="Do not simplify SPDX license expression using licomp_toolkit. May increase speed",
     action="store_true",
 )
 
@@ -249,7 +250,7 @@ parser_licensing_outbound.add_argument(
 )
 parser_licensing_outbound.add_argument(
     "--no-simplify",
-    help="Do not simplify SPDX license expression using flict. May increase speed",
+    help="Do not simplify SPDX license expression using licomp_toolkit. May increase speed",
     action="store_true",
 )
 
@@ -290,7 +291,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
             # Convert comma-separated information to list
             info = args.extract.split(",")
             extraction = extract_items_from_cdx_sbom(
-                sbom_path=args.file, information=info, flict_simplify=not args.no_simplify
+                sbom_path=args.file, information=info, licomp_toolkit_simplify=not args.no_simplify
             )
             if args.output == "json":
                 print(dict_to_json(data=extraction))
@@ -324,7 +325,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
         # List all detected licenses in an SBOM, unified and sorted
         if args.licensing_command == "list":
             all_licenses = list_all_licenses(
-                sbom_path=args.file, flict_simplify=not args.no_simplify
+                sbom_path=args.file, licomp_toolkit_simplify=not args.no_simplify
             )
             if args.output == "json":
                 print(dict_to_json(data=all_licenses))

@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2024 DB Systel GmbH
+# SPDX-FileCopyrightText: 2025 Henrik Sandklef <hesa@sandklef.com>
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -6,11 +7,11 @@
 
 import logging
 
-from ._flict import flict_simplify_license
+from ._licomp_toolkit import licomp_toolkit_simplify_license
 from ._helpers import read_json_file
 
 
-def _unify_licenses_data(licenses_data: list[dict], flict_simplify: bool = True) -> list[dict]:
+def _unify_licenses_data(licenses_data: list[dict], licomp_toolkit_simplify: bool = True) -> list[dict]:
     """Convert a list of license ids/expressions/names to a single string,
     either an expression or a name"""
 
@@ -31,8 +32,8 @@ def _unify_licenses_data(licenses_data: list[dict], flict_simplify: bool = True)
                 f"({expression})" for d in licenses_data for _, expression in d.items()
             ]
             spdx_expression = " AND ".join(expressions_list)
-            if flict_simplify:
-                spdx_expression = flict_simplify_license(spdx_expression, output_format="text")
+            if licomp_toolkit_simplify:
+                spdx_expression = licomp_toolkit_simplify_license(spdx_expression, output_format="text")
             return [{"spdx-expression": spdx_expression}]
 
         # At least one free-text license contained, so we need to form a new free-text field
@@ -60,7 +61,7 @@ def _license_short_to_valid_cdx_item(short_license: list[dict]) -> list[dict]:
     return []
 
 
-def _shorten_cdx_licenses_item(licenses: list, flict_simplify: bool = True) -> list:
+def _shorten_cdx_licenses_item(licenses: list, licomp_toolkit_simplify: bool = True) -> list:
     """Extract relevant license fields in a CycloneDX SBOM
     (id, expression, name) in a simplified form (only expression or name)"""
     collection: list[dict] = []
@@ -92,11 +93,11 @@ def _shorten_cdx_licenses_item(licenses: list, flict_simplify: bool = True) -> l
                 licdata,
             )
 
-    simplified_license_data = _unify_licenses_data(collection, flict_simplify=flict_simplify)
+    simplified_license_data = _unify_licenses_data(collection, licomp_toolkit_simplify=licomp_toolkit_simplify)
     return _license_short_to_valid_cdx_item(simplified_license_data)
 
 
-def extract_items_from_component(component: dict, items: list, flict_simplify: bool) -> dict:
+def extract_items_from_component(component: dict, items: list, licomp_toolkit_simplify: bool) -> dict:
     """Extract certain items from a single component of a CycloneDX SBOM"""
     # Very noisy logging, disabled
     # logging.debug(
@@ -109,7 +110,7 @@ def extract_items_from_component(component: dict, items: list, flict_simplify: b
         # output that is easier to parse later
         if item == "licenses-short":
             extraction[item] = _shorten_cdx_licenses_item(
-                component.get("licenses", []), flict_simplify=flict_simplify
+                component.get("licenses", []), licomp_toolkit_simplify=licomp_toolkit_simplify
             )
 
         # For all other fields, just return the output
@@ -145,7 +146,7 @@ def spdx_expression_to_cdx_licenses(spdx_expression: str | None) -> list:
 
 
 def extract_items_from_cdx_sbom(
-    sbom_path: str, information: list, flict_simplify: bool = True
+    sbom_path: str, information: list, licomp_toolkit_simplify: bool = True
 ) -> list[dict]:
     """Extract certain items from all components of a CycloneDX SBOM (JSON)"""
     sbom = read_json_file(sbom_path)
@@ -155,7 +156,7 @@ def extract_items_from_cdx_sbom(
     for comp in sbom.get("components", []):
         result.append(
             extract_items_from_component(
-                component=comp, items=information, flict_simplify=flict_simplify
+                component=comp, items=information, licomp_toolkit_simplify=licomp_toolkit_simplify
             )
         )
 

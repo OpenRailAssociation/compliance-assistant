@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2024 DB Systel GmbH
+# SPDX-FileCopyrightText: 2025 Henrik Sandklef <hesa@sandklef.com>
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -149,7 +150,7 @@ def _enrich_component_with_cd_data(
     """
     # Get purl, original licenses, and short/simplified licenses data from component
     raw_data = extract_items_from_component(
-        component, ["name", "purl", "licenses", "licenses-short", "copyright"], flict_simplify=True
+        component, ["name", "purl", "licenses", "licenses-short", "copyright"], licomp_toolkit_simplify=True
     )
     # Put raw data into separate variables, slightly adapted
     name = raw_data["name"]
@@ -251,7 +252,7 @@ def enrich_sbom_with_clearlydefined(
     1. Read SBOM file
     2. For each component:
         1. Get its purl
-        2. Get current licensing data, simplify it with flict
+        2. Get current licensing data, simplify it with licomp_toolkit
         3. Get licensing data from ClearlyDefined
         4. Compare both. If it differs, inform and update dict
     3. Update SBOM

@@ -11,6 +11,14 @@ from licomp_toolkit.format import LicompToolkitFormatter
 from licomp_toolkit.toolkit import LicompToolkit
 from licomp_toolkit.suggester import OutboundSuggester
 
+
+
+# Since licomp-toolkit takes license usage scenarios into consideration
+# some context about your dependencis is needed
+# 'library' - using your dependencies as libraries (not tool, compiler, test, documentation...)
+# 'binary-distribution' - provide your software to your users by distributing a binary
+# ['licomp_reclicense'] - only use licomp-reclicense (the main licomp resource for the above context)
+
 USECASE = 'library'
 PROVISIONING = 'binary-distribution'
 RESOURCES = ['licomp_reclicense']

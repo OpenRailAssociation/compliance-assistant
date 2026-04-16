@@ -12,9 +12,9 @@ We are committed to fostering a welcoming, respectful, and harassment-free envir
 
 ## Development setup
 
-Starting development is as easy as installing Python `poetry` and running `poetry install` once.
+Starting development is as easy as installing [uv](https://docs.astral.sh/uv/) and running `uv sync` once.
 
-In order to run the project in the new virtual environment, run `poetry run compliance-assistant`.
+In order to run the project in the new virtual environment, run `uv run compliance-assistant`.
 
 ## Contribution workflow
 

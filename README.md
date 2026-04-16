@@ -78,7 +78,7 @@ pipx upgrade compliance-assistant
 
 ### Other installation methods
 
-You may also use pure `pip` or `poetry` to install this package.
+You may also use pure `pip` or `uv` to install this package.
 
 
 ## Usage
@@ -92,8 +92,8 @@ Depending on your exact installation method, this may be one of
 pipx run compliance-assistant
 # Installation via pipx or pip
 compliance-assistant
-# Run via poetry
-poetry run compliance-assistant
+# Run via uv
+uv run compliance-assistant
 ```
 
 In the following, we will just use `compliance-assistant`.
@@ -150,7 +150,7 @@ jobs:
         run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ~/.local/bin
       # Generate SBOM with syft via compliance-assistant
       - name: Generate SBOM with syft
-        run: poetry run compliance-assistant sbom generate -g syft -d . -o ${{ runner.temp }}/sbom-raw.json
+        run: compliance-assistant sbom generate -g syft -d . -o ${{ runner.temp }}/sbom-raw.json
       # Enrich SBOM with compliance-assistant
       - name: Enrich SBOM
         run: compliance-assistant sbom enrich -f ${{ runner.temp }}/sbom-raw.json -o ${{ runner.temp }}/sbom-enriched.json

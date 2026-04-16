@@ -2,10 +2,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Functions concerning working with ClearlyDefined"""
+"""Functions concerning working with ClearlyDefined."""
 
+import contextlib
 import logging
-from os.path import join as pathjoin
+from pathlib import PurePosixPath
 from urllib.parse import urljoin
 
 from purltools import purl2clearlydefined
@@ -49,7 +50,7 @@ def _cdapi_call(
         dict: The JSON response from the API, or a dictionary containing the
         response text if JSON decoding fails.
     """
-    url = urljoin(api_url, pathjoin(basepath, path))
+    url = urljoin(api_url, str(PurePosixPath(basepath) / path))
     if json_dict:
         result = make_request_with_retry(method=method, url=url, json=json_dict, params=params)
     else:
@@ -63,7 +64,7 @@ def _cdapi_call(
         if basepath != "harvest":
             try:
                 error_msg = result.content.decode("UTF-8")
-            except:  # pylint: disable=bare-except
+            except Exception:  # noqa: BLE001
                 error_msg = result.content
             logging.warning(
                 "Unexpected JSON decoding error as result from %s: %s",
@@ -97,10 +98,8 @@ def _extract_license_copyright(cd_api_response: dict) -> tuple[str, str]:
 
         # Get copyright attributions
         if facets := licensed.get("facets"):
-            try:
+            with contextlib.suppress(TypeError, AttributeError):
                 copyrights = facets.get("core", {}).get("attribution", {}).get("parties", [])
-            except (TypeError, AttributeError):
-                pass
 
     if not license_declared:
         logging.debug("No results for declared license from ClearlyDefined for %s", package_name)
@@ -199,14 +198,27 @@ def get_clearlydefined_license_and_copyright_in_batches(
     """
     # Create connections between purl <-> coordinates
     # It might happen that a coordinate describes more than one purl (e.g. SHAs for GitHub tags)
-    purls_coordinates = {purl: purl2clearlydefined(purl) for purl in purls}
+    purls_coordinates: dict[str, str] = {}
+    for purl in purls:
+        try:
+            coordinates = purl2clearlydefined(purl)
+        except (ValueError, SystemExit):
+            coordinates = None
+        if coordinates is None:
+            logging.warning(
+                "Could not convert purl %s to ClearlyDefined coordinates, skipping", purl
+            )
+        else:
+            purls_coordinates[purl] = coordinates
+    # Include skipped purls with empty data
+    skipped_purls = set(purls) - set(purls_coordinates)
     # Request the CD API for the coordinates
     api_return = _cdapi_call(
         path="", method="POST", json_dict=list(purls_coordinates.values()), expand="-files"
     )
 
     if api_return:
-        result: dict[str, tuple[str, str]] = {}
+        result: dict[str, tuple[str, str]] = dict.fromkeys(skipped_purls, ("", ""))
         for pkg_coordinates, cd_data in api_return.items():
             # Extract license and copyright data from the CD API return
             declared_license, copyrights = _extract_license_copyright(cd_data)
@@ -235,7 +247,7 @@ def get_clearlydefined_license_and_copyright_in_batches(
         "No valid data from ClearlyDefined received for the following packages: %s",
         ", ".join(purls),
     )
-    return {purl: ("", "") for purl in purls}
+    return dict.fromkeys(purls, ("", ""))
 
 
 def print_clearlydefined_result(results: tuple[str, str]) -> None:

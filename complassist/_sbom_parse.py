@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Parse a CycloneDX SBOM and extract certain information"""
+"""Parse a CycloneDX SBOM and extract certain information."""
 
 import logging
 
@@ -12,8 +12,8 @@ from ._helpers import read_json_file
 
 def _unify_licenses_data(licenses_data: list[dict], flict_simplify: bool = True) -> list[dict]:
     """Convert a list of license ids/expressions/names to a single string,
-    either an expression or a name"""
-
+    either an expression or a name.
+    """
     # Case 1: no data
     if len(licenses_data) == 0:
         return []
@@ -48,7 +48,7 @@ def _unify_licenses_data(licenses_data: list[dict], flict_simplify: bool = True)
 
 
 def _license_short_to_valid_cdx_item(short_license: list[dict]) -> list[dict]:
-    """Convert our own short license expression back to a valid CycloneDX license object"""
+    """Convert our own short license expression back to a valid CycloneDX license object."""
     # A license is present
     if short_license:
         # SPDX expression
@@ -62,7 +62,8 @@ def _license_short_to_valid_cdx_item(short_license: list[dict]) -> list[dict]:
 
 def _shorten_cdx_licenses_item(licenses: list, flict_simplify: bool = True) -> list:
     """Extract relevant license fields in a CycloneDX SBOM
-    (id, expression, name) in a simplified form (only expression or name)"""
+    (id, expression, name) in a simplified form (only expression or name).
+    """
     collection: list[dict] = []
     for licdata in licenses:
         error = False
@@ -97,7 +98,7 @@ def _shorten_cdx_licenses_item(licenses: list, flict_simplify: bool = True) -> l
 
 
 def extract_items_from_component(component: dict, items: list, flict_simplify: bool) -> dict:
-    """Extract certain items from a single component of a CycloneDX SBOM"""
+    """Extract certain items from a single component of a CycloneDX SBOM."""
     # Very noisy logging, disabled
     # logging.debug(
     #     "Handling component: purl = %s, name = %s", component.get("purl"), component.get("name")
@@ -114,7 +115,7 @@ def extract_items_from_component(component: dict, items: list, flict_simplify: b
 
         # For all other fields, just return the output
         else:
-            extraction[item] = component.get(item, None)
+            extraction[item] = component.get(item)
 
     return extraction
 
@@ -136,9 +137,7 @@ def licenses_short_to_string(licenses: list) -> str:
 
 
 def spdx_expression_to_cdx_licenses(spdx_expression: str | None) -> list:
-    """
-    Convert a SPDX expression to a valid CycloneDX licenses item
-    """
+    """Convert a SPDX expression to a valid CycloneDX licenses item."""
     if spdx_expression is None:
         return [{"expression": spdx_expression}]
     return [{"expression": spdx_expression}]
@@ -147,16 +146,12 @@ def spdx_expression_to_cdx_licenses(spdx_expression: str | None) -> list:
 def extract_items_from_cdx_sbom(
     sbom_path: str, information: list, flict_simplify: bool = True
 ) -> list[dict]:
-    """Extract certain items from all components of a CycloneDX SBOM (JSON)"""
+    """Extract certain items from all components of a CycloneDX SBOM (JSON)."""
     sbom = read_json_file(sbom_path)
 
-    result = []
-    # Loop all contained components
-    for comp in sbom.get("components", []):
-        result.append(
-            extract_items_from_component(
-                component=comp, items=information, flict_simplify=flict_simplify
-            )
+    return [
+        extract_items_from_component(
+            component=comp, items=information, flict_simplify=flict_simplify
         )
-
-    return result
+        for comp in sbom.get("components", [])
+    ]

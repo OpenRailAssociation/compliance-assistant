@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Wrapper for some flict operations"""
+"""Wrapper for some flict operations."""
 
 import logging
 import subprocess
@@ -11,14 +11,14 @@ import subprocess
 # We need to run flict as subprocess as usage as library is too complicated
 def _run_flict(
     command: str,
-    *arguments,
+    *arguments: str,
     options: list | None = None,
     warn_on_error: bool = True,
 ) -> tuple[int, str, str]:
     """
     Run flict with a command (e.g. 'verify') and a list of arguments
     (e.g. '-il', 'GPL-2.0-only', '-ol', 'MIT'), and a list of general options (e.g. ["-ip"])
-    Return: exit code, stdout, stderr
+    Return: exit code, stdout, stderr.
     """
     if options is None:
         options = []
@@ -28,20 +28,18 @@ def _run_flict(
     code = ret.returncode
     stderr = ret.stderr.decode("UTF-8").strip()
     stdout = ret.stdout.decode("UTF-8").strip()
-    if code != 0:
-        # If only warning requested, only log error, return normal output
-        if warn_on_error:
-            logging.warning(
-                "flict exited with an error (%s): %s",
-                code,
-                stderr,
-            )
+    if code != 0 and warn_on_error:
+        logging.warning(
+            "flict exited with an error (%s): %s",
+            code,
+            stderr,
+        )
 
     return code, stdout, stderr
 
 
 def flict_simplify_license(expression: str, output_format: str, no_relicensing: bool = True) -> str:
-    """Simplify a license expression using flict"""
+    """Simplify a license expression using flict."""
     options = ["-of", output_format]
     if no_relicensing:
         options.append("-nr")
@@ -53,16 +51,16 @@ def flict_simplify_license(expression: str, output_format: str, no_relicensing: 
 
 
 def flict_simplify_license_list(expressions: list[str]) -> list[str]:
-    """Simplify a list of license expressions"""
-    simplified = []
-    for lic in expressions:
-        simplified.append(flict_simplify_license(expression=lic, output_format="text"))
+    """Simplify a list of license expressions."""
+    simplified = [
+        flict_simplify_license(expression=lic, output_format="text") for lic in expressions
+    ]
 
     return list(set(simplified))
 
 
 def flict_outbound_candidate(expression: str, output_format: str) -> str:
-    """Get possible outbound license candidates using flict"""
+    """Get possible outbound license candidates using flict."""
     # TODO: `-el` would make this command more helpful but it has an error:
     # https://github.com/vinland-technology/flict/issues/391
     _, outbound_candidate, _ = _run_flict(

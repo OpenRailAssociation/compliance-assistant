@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Overarching helper functions"""
+"""Overarching helper functions."""
 
 import json
 import logging
@@ -12,19 +12,19 @@ from time import sleep
 import requests
 
 
-def dict_to_json(data: dict) -> str:
-    """Convert a dict to pretty-printed JSON string"""
+def object_to_json(data: dict | list) -> str:
+    """Convert a list or dict to pretty-printed JSON string."""
     return json.dumps(data, indent=2, sort_keys=False)
 
 
 def read_json_file(path: str) -> dict:
-    """Open a JSON file and return it as dict"""
-    with open(path, "r", encoding="UTF-8") as jsonfile:
+    """Open a JSON file and return it as dict."""
+    with open(path, encoding="UTF-8") as jsonfile:
         return json.load(jsonfile)
 
 
 def write_json_file(data: dict, path: str) -> None:
-    """Write a dict into a JSON file, unless path is `-` for which it will be stdout"""
+    """Write a dict into a JSON file, unless path is `-` for which it will be stdout."""
     if path == "-":
         print(json.dumps(data, indent=2))
     else:
@@ -33,12 +33,12 @@ def write_json_file(data: dict, path: str) -> None:
 
 
 def print_json_file(path: str) -> None:
-    """Open a JSON file and print it to stdout"""
+    """Open a JSON file and print it to stdout."""
     write_json_file(read_json_file(path), "-")
 
 
 def delete_file(path: str) -> None:
-    """Delete a file"""
+    """Delete a file."""
     Path(path).unlink(missing_ok=True)
 
 
@@ -63,8 +63,8 @@ def extract_excerpt(multiline_string: str | None, length: int = 50) -> str:
     return (single_line[:length] + "...") if len(single_line) > length else single_line
 
 
-def make_request_with_retry(  # pylint: disable=inconsistent-return-statements
-    method: str, url: str, retries: int = 3, wait: int = 20, **kwargs
+def make_request_with_retry(
+    method: str, url: str, retries: int = 3, wait: int = 20, **kwargs: object
 ) -> requests.Response:
     """
     Make an HTTP request with retry logic on timeout.
@@ -86,7 +86,6 @@ def make_request_with_retry(  # pylint: disable=inconsistent-return-statements
         try:
             response = requests.request(method=method, url=url, timeout=10, **kwargs)
             response.raise_for_status()  # Raise an exception for HTTP errors
-            return response
         except requests.exceptions.Timeout:
             logging.warning(
                 "Timeout on attempt %s/%s. Retrying in %s seconds...", attempt + 1, retries, wait
@@ -94,8 +93,10 @@ def make_request_with_retry(  # pylint: disable=inconsistent-return-statements
             if attempt < retries - 1:
                 sleep(wait)
             else:
-                logging.error("All retry attempts failed due to timeout.")
-        except requests.exceptions.RequestException as e:
-            logging.error("Request failed: %s", e)
+                logging.exception("All retry attempts failed due to timeout.")
+        except requests.exceptions.RequestException:
+            logging.exception("Request failed")
+        else:
+            return response
 
     return requests.Response()

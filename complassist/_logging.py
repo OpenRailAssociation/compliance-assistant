@@ -2,17 +2,18 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Logging functions"""
+"""Logging functions."""
 
+import http.client as http_client
 import logging
+from argparse import Namespace
 
 
-def configure_logger(args) -> logging.Logger:
-    """Set logging options"""
+def configure_logger(args: Namespace) -> logging.Logger:
+    """Set logging options."""
     # Base logger config
     log = logging.getLogger()
     logging.basicConfig(
-        encoding="utf-8",
         format="%(levelname)s: %(message)s",
         level=logging.INFO,
     )
@@ -24,8 +25,6 @@ def configure_logger(args) -> logging.Logger:
         requests_log = logging.getLogger("requests.packages.urllib3")
         requests_log.setLevel(logging.DEBUG)
         requests_log.propagate = True
-        import http.client as http_client  # pylint: disable=import-outside-toplevel
-
         http_client.HTTPConnection.debuglevel = 1
 
     return log

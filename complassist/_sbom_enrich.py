@@ -2,10 +2,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Generate a CycloneDX SBOM and enrich its licensing data via ClearlyDefined"""
+"""Generate a CycloneDX SBOM and enrich its licensing data via ClearlyDefined."""
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Any
 
 from purltools import purl2clearlydefined
 
@@ -185,7 +186,7 @@ def _enrich_component_with_cd_data(
         logging.debug("[%s] %s", purl, msg)
 
 
-def _update_sbom_metadata(sbom: dict) -> dict:
+def _update_sbom_metadata(sbom: dict[str, Any]) -> dict[str, Any]:
     """
     Updates the Software Bill of Materials (SBOM) with additional metadata.
 
@@ -200,10 +201,9 @@ def _update_sbom_metadata(sbom: dict) -> dict:
     Returns:
         dict: The updated SBOM dictionary with the new metadata values.
     """
-
     # Prepare new/additional metadata values
     version = int(sbom.get("version", 1)) + 1
-    timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     tool = {
         "name": "compliance-assistant",
         "group": "OpenRailAssociation",
@@ -221,22 +221,15 @@ def _update_sbom_metadata(sbom: dict) -> dict:
     # Set new version
     sbom["version"] = version
     # Add timestamp (and metadata if missing)
-    try:
-        sbom["metadata"]["timestamp"] = timestamp
-    except KeyError:
-        sbom["metadata"] = {"timestamp": timestamp}
+    metadata: dict[str, Any] = sbom.setdefault("metadata", {})
+    metadata["timestamp"] = timestamp
     # Add tool component
-    try:
-        sbom["metadata"]["tools"]["components"].append(tool)
-    except KeyError:
-        if "tools" not in sbom["metadata"]:
-            sbom["metadata"]["tools"] = {}
-            sbom["metadata"]["tools"]["components"] = [tool]
+    tools: dict[str, Any] = metadata.setdefault("tools", {})
+    components: list[dict[str, str]] = tools.setdefault("components", [])
+    components.append(tool)
     # Add author
-    try:
-        sbom["metadata"]["authors"].append(author)
-    except KeyError:
-        sbom["metadata"]["authors"] = [author]
+    authors: list[dict[str, str]] = metadata.setdefault("authors", [])
+    authors.append(author)
 
     return sbom
 
@@ -262,8 +255,7 @@ def enrich_sbom_with_clearlydefined(
         in_batches (bool): Ask ClearlyDefined API for multiple packages at once.
         batch_size (int): Number of packages for batch request at ClearlyDefined.
     """
-
-    sbom: dict[str, list[dict]] = read_json_file(sbom_file)
+    sbom: dict[str, Any] = read_json_file(sbom_file)
 
     # Loop all contained components, and collect ClearlyDefined data
     clearlydefined_data: dict[str, dict[str, str]] = {}
@@ -291,8 +283,13 @@ def enrich_sbom_with_clearlydefined(
     else:
         for purl in all_purls:
             logging.info("Getting ClearlyDefined data for %s", purl)
+            coordinates = purl2clearlydefined(purl)
+            if coordinates is None:
+                logging.warning("Could not convert purl %s to ClearlyDefined coordinates", purl)
+                clearlydefined_data[purl] = {"license": "", "copyright": ""}
+                continue
             cd_license, cd_copyright = get_clearlydefined_license_and_copyright(
-                coordinates=purl2clearlydefined(purl)
+                coordinates=coordinates
             )
             clearlydefined_data[purl] = {"license": cd_license, "copyright": cd_copyright}
 

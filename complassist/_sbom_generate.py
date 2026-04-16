@@ -2,13 +2,13 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Create a CycloneDX SBOM using cgxgen as Docker container"""
+"""Create a CycloneDX SBOM using cgxgen as Docker container."""
 
 import logging
 import re
 import subprocess
 import sys
-from os.path import abspath, basename, dirname
+from pathlib import Path
 from shutil import copy2
 from tempfile import NamedTemporaryFile, gettempdir
 from typing import Literal
@@ -82,9 +82,9 @@ def _run_cdxgen_docker(
             image=image,
             name=cont_name,
             remove=True,
-            volumes=[f"{directory}:/app", f"{dirname(output_path)}:/sbom_data"],
+            volumes=[f"{directory}:/app", f"{Path(output_path).parent}:/sbom_data"],
             tty=True,
-            command=["-r", "/app", "-o", f"/sbom_data/{basename(output_path)}"],
+            command=["-r", "/app", "-o", f"/sbom_data/{Path(output_path).name}"],
         )
     except ContainerError as err:
         logging.critical("Docker container wasn't able to start: %s", err)
@@ -134,9 +134,9 @@ def sbom_gen_cdxgen_docker(directory: str, output: str = "") -> str:
         sys.exit(1)
 
     # Turn directory into absolute path, to support directories like `.`
-    directory = str(abspath(directory))
+    directory = str(Path(directory).resolve())
     # Define names for container and SBOM output
-    cont_name = _sanitize_container_name(f"{basename(directory)}_{uuid4().hex[:6]}")
+    cont_name = _sanitize_container_name(f"{Path(directory).name}_{uuid4().hex[:6]}")
     # Define output path
     if not output:
         output = f"{gettempdir()}/{cont_name}.json"
@@ -159,7 +159,7 @@ def sbom_gen_cdxgen_docker(directory: str, output: str = "") -> str:
 
 
 def _run_program(
-    program: str, *arguments, working_directory: str | None = None
+    program: str, *arguments: str, working_directory: str | None = None
 ) -> tuple[int, str, str]:
     cmd = [program, *arguments]
     logging.debug("Running %s", cmd)
@@ -178,14 +178,14 @@ def _run_program(
 
 
 def _run_syft(directory: str, tmpfile: str) -> tuple[int, str, str]:
-    """Run syft scan to generate SBOM"""
+    """Run syft scan to generate SBOM."""
     _, syft_version, _ = _run_program("syft", "--version")
     logging.info("Running %s to generate SBOM", syft_version)
     return _run_program("syft", "scan", f"dir:{directory}", "-o", f"cyclonedx-json={tmpfile}")
 
 
 def _run_cdxgen(directory: str, tmpfile: str) -> tuple[int, str, str]:
-    """Run cdxgen to generate SBOM"""
+    """Run cdxgen to generate SBOM."""
     _, cdxgen_version, _ = _run_program("cdxgen", "--version")
     logging.info("Running cdxgen %s to generate SBOM", cdxgen_version)
     return _run_program("cdxgen", "-r", "-o", tmpfile, working_directory=directory)
@@ -216,7 +216,6 @@ def sbom_gen_system_program(
     Returns:
         str: The absolute path to the generated SBOM JSON file.
     """
-
     with NamedTemporaryFile() as tmpfile:
         if program == "syft":
             code, stdout, stderr = _run_syft(directory=directory, tmpfile=tmpfile.name)
@@ -237,7 +236,7 @@ def sbom_gen_system_program(
 
         # Set an output file in a temp location, if none given
         if not output:
-            output = f"{gettempdir()}/sbom-{basename(tmpfile.name)}.json"
+            output = f"{gettempdir()}/sbom-{Path(tmpfile.name).name}.json"
 
         # Copy temporary SBOM file to final destination
         try:

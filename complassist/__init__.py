@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Global Init file"""
+"""Global Init file."""
 
 from importlib.metadata import version
 

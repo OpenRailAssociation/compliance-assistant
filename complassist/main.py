@@ -5,7 +5,7 @@
 """
 Toolset that helps you with creating and interacting with SBOMs, enriching with
 licensing and copyright information, and checking for Open Source license
-compliance
+compliance.
 """
 
 import argparse
@@ -19,7 +19,7 @@ from ._clearlydefined import (
     get_clearlydefined_license_and_copyright,
     print_clearlydefined_result,
 )
-from ._helpers import dict_to_json
+from ._helpers import object_to_json
 from ._licensing import get_outbound_candidate, list_all_licenses
 from ._logging import configure_logger
 from ._sbom_enrich import enrich_sbom_with_clearlydefined
@@ -254,9 +254,8 @@ parser_licensing_outbound.add_argument(
 )
 
 
-def main():  # pylint: disable=too-many-branches, too-many-statements
-    """Main function"""
-
+def main() -> None:
+    """Main function."""
     args = parser.parse_args()
 
     # Set logger
@@ -293,7 +292,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
                 sbom_path=args.file, information=info, flict_simplify=not args.no_simplify
             )
             if args.output == "json":
-                print(dict_to_json(data=extraction))
+                print(object_to_json(data=extraction))
             elif args.output == "dict":
                 print(extraction)
             elif args.output == "none":
@@ -310,14 +309,12 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
             print(purl2clearlydefined(purl=args.purl))
 
         elif args.clearlydefined_command == "fetch":
-            if args.purl:
-                coordinates = purl2clearlydefined(purl=args.purl)
-            else:
-                coordinates = args.coordinates
+            coordinates = purl2clearlydefined(purl=args.purl) if args.purl else args.coordinates
 
-            print_clearlydefined_result(
-                results=get_clearlydefined_license_and_copyright(coordinates)
-            )
+            if coordinates is not None:
+                print_clearlydefined_result(
+                    results=get_clearlydefined_license_and_copyright(coordinates)
+                )
 
     # License compliance commands
     elif args.command == "licensing":
@@ -327,7 +324,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
                 sbom_path=args.file, flict_simplify=not args.no_simplify
             )
             if args.output == "json":
-                print(dict_to_json(data=all_licenses))
+                print(object_to_json(data=all_licenses))
             elif args.output == "dict":
                 print(all_licenses)
             elif args.output == "plain":
@@ -341,11 +338,12 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
                 sbom_path=args.file, simplify=not args.no_simplify
             )
             if args.output == "json":
-                print(dict_to_json(data=outbound_candidates))
+                print(object_to_json(data=outbound_candidates))
             elif args.output == "dict":
                 print(outbound_candidates)
             elif args.output == "plain":
-                print("\n".join(outbound_candidates.get("outbound_candidate")))
+                candidate = outbound_candidates.get("outbound_candidate", "")
+                print("\n".join(candidate) if isinstance(candidate, list) else candidate)
             elif args.output == "none":
                 pass
 

@@ -2,72 +2,104 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-[tool.poetry]
+[project]
 name = "compliance-assistant"
 version = "1.1.5"
 description = "Toolset that helps with creating and interacting with SBOMs, enriching with licensing and copyright information, and checking for Open Source license compliance"
-repository = "https://github.com/OpenRailAssociation/compliance-assistant"
-authors = ["Max Mehl <max.mehl@deutschebahn.com>"]
+authors = [{ name = "Max Mehl", email = "max.mehl@deutschebahn.com" }]
+requires-python = ">=3.10,<4"
 readme = "README.md"
-keywords = [
-  "sbom",
-  "compliance",
-  "clearlydefined",
-  "cyclonedx",
-  "spdx",
-  "license",
-  "copyright",
-  "flict",
-  "compatibility",
-]
 license = "Apache-2.0"
-classifiers = [
-  "Development Status :: 5 - Production/Stable",
-  "Environment :: Console",
-  "License :: OSI Approved :: Apache Software License",
-  "Topic :: Software Development",
+keywords = [
+    "sbom",
+    "compliance",
+    "clearlydefined",
+    "cyclonedx",
+    "spdx",
+    "license",
+    "copyright",
+    "flict",
+    "compatibility",
 ]
-packages = [{ include = "complassist" }]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Topic :: Software Development",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "requests>=2.32.5,<3",
+    "flict>=1.3.0,<2",
+    "docker>=7.1.0,<8",
+    "license-expression>=30.4.4,<31",
+    "purl-tools>=0.2.3,<0.3",
+]
 
-[tool.poetry.scripts]
-compliance-assistant = 'complassist.main:main'
+[project.urls]
+Repository = "https://github.com/OpenRailAssociation/compliance-assistant"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-requests = "^2.32.5"
-flict = "^1.3.0"
-docker = "^7.1.0"
-license-expression = "^30.4.4"
-purl-tools = "^0.2.3"
+[project.scripts]
+compliance-assistant = "complassist.main:main"
 
+[dependency-groups]
+dev = [
+    "ruff>=0.15.10",
+    "ty>=0.0.29",
+    "bump-my-version>=1.1.2,<2",
+]
 
-[tool.poetry.group.dev.dependencies]
-mypy = "^1.18.2"
-pylint = "^4.0.0"
-black = "^26.0.0"
-isort = "^8.0.0"
-bump-my-version = "^1.2.3"
+[tool.uv]
+default-groups = "all"
+
+[tool.uv.build-backend]
+module-name = ["complassist"]
+module-root = ""
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.11.6,<0.12.0"]
+build-backend = "uv_build"
 
-# FORMATTING settings
-[tool.isort]
-profile = "black"
-
-[tool.black]
+# FORMATTING and LINTING settings
+[tool.ruff]
 line-length = 100
 
-# MYPY settings
-[tool.mypy]
-files = ["complassist/*.py"]
-disable_error_code = ["import-untyped"]
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "T",
+    "FBT",
+    "LOG015",
+    "COM812",
+    "ERA001",
+    "S310",
+    "S603",
+    "D205",
+    "D212",
+    "PTH123",
+    "FIX002",
+    "TD002",
+    "TD003",
+    "PERF203",
+]
+[tool.ruff.lint.extend-per-file-ignores]
+"complassist/main.py" = ["C901", "PLR0912", "PLR0915"]
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+# TY settings
+[tool.ty.src]
+include = ["complassist"]
 
 # Bump-My-Version
 [tool.bumpversion]
 commit = true
 tag = true
+sign_tags = true
 allow_dirty = false
 tag_name = "v{new_version}"
 
@@ -76,3 +108,16 @@ filename = "pyproject.toml"
 regex = true
 search = "^version = \"{current_version}\""
 replace = "version = \"{new_version}\""
+
+[[tool.bumpversion.files]]
+filename = "uv.lock"
+search = """
+[[package]]
+name = "compliance-assistant"
+version = "{current_version}"
+"""
+replace = """
+[[package]]
+name = "compliance-assistant"
+version = "{new_version}"
+"""

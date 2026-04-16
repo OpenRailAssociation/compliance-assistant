@@ -2,10 +2,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Functions concerning working with ClearlyDefined"""
+"""Functions concerning working with ClearlyDefined."""
 
+import contextlib
 import logging
-from os.path import join as pathjoin
+from pathlib import PurePosixPath
 from urllib.parse import urljoin
 
 from purltools import purl2clearlydefined
@@ -49,7 +50,7 @@ def _cdapi_call(
         dict: The JSON response from the API, or a dictionary containing the
         response text if JSON decoding fails.
     """
-    url = urljoin(api_url, pathjoin(basepath, path))
+    url = urljoin(api_url, str(PurePosixPath(basepath) / path))
     if json_dict:
         result = make_request_with_retry(method=method, url=url, json=json_dict, params=params)
     else:
@@ -63,7 +64,7 @@ def _cdapi_call(
         if basepath != "harvest":
             try:
                 error_msg = result.content.decode("UTF-8")
-            except:  # pylint: disable=bare-except
+            except Exception:  # noqa: BLE001
                 error_msg = result.content
             logging.warning(
                 "Unexpected JSON decoding error as result from %s: %s",
@@ -97,10 +98,8 @@ def _extract_license_copyright(cd_api_response: dict) -> tuple[str, str]:
 
         # Get copyright attributions
         if facets := licensed.get("facets"):
-            try:
+            with contextlib.suppress(TypeError, AttributeError):
                 copyrights = facets.get("core", {}).get("attribution", {}).get("parties", [])
-            except (TypeError, AttributeError):
-                pass
 
     if not license_declared:
         logging.debug("No results for declared license from ClearlyDefined for %s", package_name)
@@ -235,7 +234,7 @@ def get_clearlydefined_license_and_copyright_in_batches(
         "No valid data from ClearlyDefined received for the following packages: %s",
         ", ".join(purls),
     )
-    return {purl: ("", "") for purl in purls}
+    return dict.fromkeys(purls, ("", ""))
 
 
 def print_clearlydefined_result(results: tuple[str, str]) -> None:

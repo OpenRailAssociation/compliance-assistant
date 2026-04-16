@@ -283,7 +283,10 @@ def enrich_sbom_with_clearlydefined(
     else:
         for purl in all_purls:
             logging.info("Getting ClearlyDefined data for %s", purl)
-            coordinates = purl2clearlydefined(purl)
+            try:
+                coordinates = purl2clearlydefined(purl)
+            except (ValueError, SystemExit):
+                coordinates = None
             if coordinates is None:
                 logging.warning("Could not convert purl %s to ClearlyDefined coordinates", purl)
                 clearlydefined_data[purl] = {"license": "", "copyright": ""}

@@ -198,14 +198,27 @@ def get_clearlydefined_license_and_copyright_in_batches(
     """
     # Create connections between purl <-> coordinates
     # It might happen that a coordinate describes more than one purl (e.g. SHAs for GitHub tags)
-    purls_coordinates = {purl: purl2clearlydefined(purl) for purl in purls}
+    purls_coordinates: dict[str, str] = {}
+    for purl in purls:
+        try:
+            coordinates = purl2clearlydefined(purl)
+        except (ValueError, SystemExit):
+            coordinates = None
+        if coordinates is None:
+            logging.warning(
+                "Could not convert purl %s to ClearlyDefined coordinates, skipping", purl
+            )
+        else:
+            purls_coordinates[purl] = coordinates
+    # Include skipped purls with empty data
+    skipped_purls = set(purls) - set(purls_coordinates)
     # Request the CD API for the coordinates
     api_return = _cdapi_call(
         path="", method="POST", json_dict=list(purls_coordinates.values()), expand="-files"
     )
 
     if api_return:
-        result: dict[str, tuple[str, str]] = {}
+        result: dict[str, tuple[str, str]] = dict.fromkeys(skipped_purls, ("", ""))
         for pkg_coordinates, cd_data in api_return.items():
             # Extract license and copyright data from the CD API return
             declared_license, copyrights = _extract_license_copyright(cd_data)

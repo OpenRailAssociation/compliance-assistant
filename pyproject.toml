@@ -17,7 +17,7 @@ keywords = [
   "spdx",
   "license",
   "copyright",
-  "flict",
+  "licomp-toolkit",
   "compatibility",
 ]
 license = "Apache-2.0"
@@ -35,7 +35,7 @@ compliance-assistant = 'complassist.main:main'
 [tool.poetry.dependencies]
 python = "^3.10"
 requests = "^2.32.5"
-flict = "^1.3.0"
+licomp-toolkit = "^0.5.20"
 docker = "^7.1.0"
 license-expression = "^30.4.4"
 purl-tools = "^0.2.3"

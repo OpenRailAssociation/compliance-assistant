@@ -50,7 +50,6 @@ compliance-assistant = "complassist.main:main"
 dev = [
     "ruff>=0.15.10",
     "ty>=0.0.29",
-    "bump-my-version>=1.1.2,<2",
 ]
 
 [tool.uv]
@@ -94,30 +93,3 @@ convention = "google"
 # TY settings
 [tool.ty.src]
 include = ["complassist"]
-
-# Bump-My-Version
-[tool.bumpversion]
-commit = true
-tag = true
-sign_tags = true
-allow_dirty = false
-tag_name = "v{new_version}"
-
-[[tool.bumpversion.files]]
-filename = "pyproject.toml"
-regex = true
-search = "^version = \"{current_version}\""
-replace = "version = \"{new_version}\""
-
-[[tool.bumpversion.files]]
-filename = "uv.lock"
-search = """
-[[package]]
-name = "compliance-assistant"
-version = "{current_version}"
-"""
-replace = """
-[[package]]
-name = "compliance-assistant"
-version = "{new_version}"
-"""

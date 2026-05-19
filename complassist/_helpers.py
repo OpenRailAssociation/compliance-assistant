@@ -4,10 +4,13 @@
 
 """Overarching helper functions."""
 
+from __future__ import annotations
+
 import json
 import logging
 from pathlib import Path
 from time import sleep
+from typing import Any
 
 import requests
 
@@ -64,7 +67,11 @@ def extract_excerpt(multiline_string: str | None, length: int = 50) -> str:
 
 
 def make_request_with_retry(
-    method: str, url: str, retries: int = 3, wait: int = 20, **kwargs: object
+    method: str,
+    url: str,
+    retries: int = 3,
+    wait: int = 20,
+    **kwargs: Any,  # noqa: ANN401
 ) -> requests.Response:
     """
     Make an HTTP request with retry logic on timeout.

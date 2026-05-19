@@ -4,7 +4,7 @@
 
 [project]
 name = "compliance-assistant"
-version = "1.1.6"
+version = "1.1.7"
 description = "Toolset that helps with creating and interacting with SBOMs, enriching with licensing and copyright information, and checking for Open Source license compliance"
 authors = [{ name = "Max Mehl", email = "max.mehl@deutschebahn.com" }]
 requires-python = ">=3.10,<4"

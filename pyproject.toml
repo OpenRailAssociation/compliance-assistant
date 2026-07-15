@@ -10,6 +10,7 @@ authors = [{ name = "Max Mehl", email = "max.mehl@deutschebahn.com" }]
 requires-python = ">=3.10,<4"
 readme = "README.md"
 license = "Apache-2.0"
+license-files = ["LICENSE", "LICENSES/*"]
 keywords = [
     "sbom",
     "compliance",
@@ -42,6 +43,7 @@ dependencies = [
 
 [project.urls]
 Repository = "https://github.com/OpenRailAssociation/compliance-assistant"
+Changelog = "https://github.com/OpenRailAssociation/compliance-assistant/blob/main/CHANGELOG.md"
 
 [project.scripts]
 compliance-assistant = "complassist.main:main"

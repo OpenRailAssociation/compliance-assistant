@@ -86,6 +86,7 @@ ignore = [
     "TD002",
     "TD003",
     "PERF203",
+    "CPY",
 ]
 [tool.ruff.lint.extend-per-file-ignores]
 "complassist/main.py" = ["C901", "PLR0912", "PLR0915"]

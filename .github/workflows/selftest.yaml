@@ -25,7 +25,7 @@ jobs:
       - name: Install syft
         run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b ~/.local/bin
       - name: Install compliance-assistant
-        uses: ./.github/actions/uvbuild
+        uses: $/.github/actions/uvbuild
       - name: Generate SBOM with syft
         run: uv run compliance-assistant sbom generate -v -g syft -d . -o ${{ runner.temp }}/sbom-syft.json
         env:
@@ -46,7 +46,7 @@ jobs:
       - name: Install cdxgen # zizmor: ignore[adhoc-packages]
         run: npm install -g @cyclonedx/cdxgen
       - name: Install compliance-assistant
-        uses: ./.github/actions/uvbuild
+        uses: $/.github/actions/uvbuild
       - name: Generate SBOM with cdxgen
         run: uv run compliance-assistant sbom generate -v -g cdxgen -d . -o ${{ runner.temp }}/sbom-cdxgen.json
       - name: Store raw SBOM as artifact
@@ -63,7 +63,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/uvbuild
+      - uses: $/.github/actions/uvbuild
       - name: Download Syft SBOM artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -89,7 +89,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/uvbuild
+      - uses: $/.github/actions/uvbuild
       - name: Download cdxgen SBOM artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:

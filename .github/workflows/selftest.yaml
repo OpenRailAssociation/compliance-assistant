@@ -16,7 +16,7 @@ permissions:
 jobs:
   # Generate SBOM using syft
   sbom-gen-syft:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -38,7 +38,7 @@ jobs:
 
   # Generate SBOM using cdxgen (npm package)
   sbom-gen-cdxgen:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -57,7 +57,7 @@ jobs:
 
   # Enrich the generated Syft SBOM
   sbom-enrich-syft:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: sbom-gen-syft
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -83,7 +83,7 @@ jobs:
 
   # Enrich the generated cdxgen SBOM
   sbom-enrich-cdxgen:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: sbom-gen-cdxgen
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.9](https://github.com/OpenRailAssociation/compliance-assistant/compare/v1.1.8...v1.1.9) (2026-10-10)
+
+
+### ⚙️ Chores
+
+* **deps:** update github actions group ([#185](https://github.com/OpenRailAssociation/compliance-assistant/issues/185)) ([f9b3a1d](https://github.com/OpenRailAssociation/compliance-assistant/commit/f9b3a1d4f5bb52defa3b6587d8bf51230a781fdb))
+
 ## [1.1.8](https://github.com/OpenRailAssociation/compliance-assistant/compare/v1.1.7...v1.1.8) (2026-10-05)
 
 

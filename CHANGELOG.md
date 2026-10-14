@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.9](https://github.com/OpenRailAssociation/compliance-assistant/compare/v1.1.8...v1.1.9) (2026-10-14)
+
+
+### ⚙️ Chores
+
+* **deps:** lock file maintenance ([#187](https://github.com/OpenRailAssociation/compliance-assistant/issues/187)) ([fa1817a](https://github.com/OpenRailAssociation/compliance-assistant/commit/fa1817a7a84f3bcc037bf1dc30c5d11d68bf37e9))
+* **deps:** update astral-sh/setup-uv action to v10.3.0 ([#188](https://github.com/OpenRailAssociation/compliance-assistant/issues/188)) ([0b19a9e](https://github.com/OpenRailAssociation/compliance-assistant/commit/0b19a9e1f4c13d20cee68dace3e649914dcfc3d6))
+* **deps:** update dependency python to 3.15 ([#190](https://github.com/OpenRailAssociation/compliance-assistant/issues/190)) ([1faf227](https://github.com/OpenRailAssociation/compliance-assistant/commit/1faf22756943fe5bbc3dd83109fddc28a91caa7d))
+* **deps:** update dependency uv_build to &gt;=0.13.0,&lt;0.14.0 ([#189](https://github.com/OpenRailAssociation/compliance-assistant/issues/189)) ([895eda9](https://github.com/OpenRailAssociation/compliance-assistant/commit/895eda90ce199fe39ccf274774673f359702892d))
+* **deps:** update github actions group ([#185](https://github.com/OpenRailAssociation/compliance-assistant/issues/185)) ([f9b3a1d](https://github.com/OpenRailAssociation/compliance-assistant/commit/f9b3a1d4f5bb52defa3b6587d8bf51230a781fdb))
+
 ## [1.1.8](https://github.com/OpenRailAssociation/compliance-assistant/compare/v1.1.7...v1.1.8) (2026-10-05)
 
 

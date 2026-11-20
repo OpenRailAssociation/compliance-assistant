@@ -7,7 +7,7 @@ name = "compliance-assistant"
 version = "1.1.9"
 description = "Toolset that helps with creating and interacting with SBOMs, enriching with licensing and copyright information, and checking for Open Source license compliance"
 authors = [{ name = "Max Mehl", email = "max.mehl@deutschebahn.com" }]
-requires-python = ">=3.10,<4"
+requires-python = ">=3.11,<4"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "LICENSES/*"]
@@ -27,11 +27,11 @@ classifiers = [
     "Environment :: Console",
     "Topic :: Software Development",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
     "requests>=2.32.5,<3",

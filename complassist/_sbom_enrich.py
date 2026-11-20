@@ -5,7 +5,7 @@
 """Generate a CycloneDX SBOM and enrich its licensing data via ClearlyDefined."""
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from purltools import purl2clearlydefined
@@ -203,7 +203,7 @@ def _update_sbom_metadata(sbom: dict[str, Any]) -> dict[str, Any]:
     """
     # Prepare new/additional metadata values
     version = int(sbom.get("version", 1)) + 1
-    timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    timestamp = datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     tool = {
         "name": "compliance-assistant",
         "group": "OpenRailAssociation",

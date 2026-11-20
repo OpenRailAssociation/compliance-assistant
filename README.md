@@ -36,7 +36,7 @@ Some of these features are made possible by excellent programs such as [flict](h
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.11+
 - Internet connection for accessing ClearlyDefined services
 - At least one SBOM generator:
   - [syft](https://github.com/anchore/syft/)

@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.2.0](https://github.com/OpenRailAssociation/compliance-assistant/compare/v1.1.9...v1.2.0) (2026-11-27)
+
+
+### 🚀 New Features
+
+* drop support for Python 3.10, add Python 3.15 ([#207](https://github.com/OpenRailAssociation/compliance-assistant/issues/207)) ([73e357e](https://github.com/OpenRailAssociation/compliance-assistant/commit/73e357edc1509f030ca0fa50d233b0e7c27e26b6))
+
+
+### ⚙️ Chores
+
+* **deps:** lock file maintenance ([#203](https://github.com/OpenRailAssociation/compliance-assistant/issues/203)) ([4c60014](https://github.com/OpenRailAssociation/compliance-assistant/commit/4c60014ca2d35f7faec7d557fd9f0f809bf176e5))
+* **deps:** lock file maintenance ([#205](https://github.com/OpenRailAssociation/compliance-assistant/issues/205)) ([edfad25](https://github.com/OpenRailAssociation/compliance-assistant/commit/edfad25d79f914b4650ff89d8b860a339b625fb5))
+* **deps:** lock file maintenance ([#206](https://github.com/OpenRailAssociation/compliance-assistant/issues/206)) ([e0a7c7b](https://github.com/OpenRailAssociation/compliance-assistant/commit/e0a7c7ba44a1df3b8186046460c525fa7d58c041))
+* **deps:** lock file maintenance ([#209](https://github.com/OpenRailAssociation/compliance-assistant/issues/209)) ([c22bac8](https://github.com/OpenRailAssociation/compliance-assistant/commit/c22bac8e84669ce292b86bbddd408aa85e3b2ba8))
+* **deps:** update actions/create-github-app-token action to v3.4.0 ([#208](https://github.com/OpenRailAssociation/compliance-assistant/issues/208)) ([9d47ce3](https://github.com/OpenRailAssociation/compliance-assistant/commit/9d47ce3b96d6d02aadb720de58657b2f24eecd57))
+* **deps:** update astral-sh/setup-uv action to v10.3.3 ([#201](https://github.com/OpenRailAssociation/compliance-assistant/issues/201)) ([403707d](https://github.com/OpenRailAssociation/compliance-assistant/commit/403707d6f5cf5fee73a94b11b45ad6c941a33dac))
+* **deps:** update astral-sh/setup-uv action to v10.4.0 ([#210](https://github.com/OpenRailAssociation/compliance-assistant/issues/210)) ([c947389](https://github.com/OpenRailAssociation/compliance-assistant/commit/c947389e8a8a4ef00d63d5437f6cefa3ad4630e5))
+* **deps:** update zizmorcore/zizmor-action action to v0.8.1 ([#204](https://github.com/OpenRailAssociation/compliance-assistant/issues/204)) ([b40484d](https://github.com/OpenRailAssociation/compliance-assistant/commit/b40484d5bd494d49db32563cc1625ac7019e3d2b))
+* **deps:** update zizmorcore/zizmor-action action to v0.9.1 ([#211](https://github.com/OpenRailAssociation/compliance-assistant/issues/211)) ([24e4e39](https://github.com/OpenRailAssociation/compliance-assistant/commit/24e4e39b55f77456dc30ca40d5063c5f6803a4b4))
+* **deps:** update zizmorcore/zizmor-action action to v0.9.2 ([#212](https://github.com/OpenRailAssociation/compliance-assistant/issues/212)) ([f183eee](https://github.com/OpenRailAssociation/compliance-assistant/commit/f183eee62adce0440f58e8c979424bd7aaf66ea4))
+
 ## [1.1.9](https://github.com/OpenRailAssociation/compliance-assistant/compare/v1.1.8...v1.1.9) (2026-10-26)
 
 
